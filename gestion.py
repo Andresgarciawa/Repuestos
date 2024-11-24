@@ -4,10 +4,139 @@ from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
 
+class VentanaCliente:
+    def __init__(self, parent):
+        self.ventana = Toplevel(parent)
+        self.ventana.title("Registro de Cliente")
+        self.ventana.geometry("400x300")
+        
+        # Frame principal
+        main_frame = ttk.Frame(self.ventana, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
+        
+        # Campos del cliente
+        ttk.Label(main_frame, text="Registro de Cliente", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
+        
+        ttk.Label(main_frame, text="Documento:").grid(row=1, column=0, pady=5)
+        self.doc_cliente = StringVar()
+        ttk.Entry(main_frame, textvariable=self.doc_cliente).grid(row=1, column=1, pady=5)
+        
+        ttk.Label(main_frame, text="Nombre:").grid(row=2, column=0, pady=5)
+        self.nombre_cliente = StringVar()
+        ttk.Entry(main_frame, textvariable=self.nombre_cliente).grid(row=2, column=1, pady=5)
+        
+        # Botón de registro
+        ttk.Button(main_frame, text="Registrar Cliente", command=self.registrar_cliente).grid(row=3, column=0, columnspan=2, pady=20)
+        
+    def registrar_cliente(self):
+        try:
+            cliente = Cliente(self.doc_cliente.get(), self.nombre_cliente.get(), True)
+            messagebox.showinfo("Éxito", cliente.crearCliente())
+            self.limpiar_campos()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
+    
+    def limpiar_campos(self):
+        self.doc_cliente.set("")
+        self.nombre_cliente.set("")
+
+class VentanaRepuesto:
+    def __init__(self, parent):
+        self.ventana = Toplevel(parent)
+        self.ventana.title("Registro de Repuesto")
+        self.ventana.geometry("400x300")
+        
+        # Frame principal
+        main_frame = ttk.Frame(self.ventana, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
+        
+        # Campos del repuesto
+        ttk.Label(main_frame, text="Registro de Repuesto", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
+        
+        ttk.Label(main_frame, text="ID:").grid(row=1, column=0, pady=5)
+        self.id_repuesto = StringVar()
+        ttk.Entry(main_frame, textvariable=self.id_repuesto).grid(row=1, column=1, pady=5)
+        
+        ttk.Label(main_frame, text="Nombre:").grid(row=2, column=0, pady=5)
+        self.nombre_repuesto = StringVar()
+        ttk.Entry(main_frame, textvariable=self.nombre_repuesto).grid(row=2, column=1, pady=5)
+        
+        ttk.Label(main_frame, text="Precio:").grid(row=3, column=0, pady=5)
+        self.precio_repuesto = StringVar()
+        ttk.Entry(main_frame, textvariable=self.precio_repuesto).grid(row=3, column=1, pady=5)
+        
+        # Botón de registro
+        ttk.Button(main_frame, text="Registrar Repuesto", command=self.registrar_repuesto).grid(row=4, column=0, columnspan=2, pady=20)
+        
+    def registrar_repuesto(self):
+        try:
+            repuesto = Repuesto(
+                int(self.id_repuesto.get()),
+                self.nombre_repuesto.get(),
+                float(self.precio_repuesto.get())
+            )
+            messagebox.showinfo("Éxito", repuesto.crearRepuesto())
+            self.limpiar_campos()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al registrar repuesto: {str(e)}")
+    
+    def limpiar_campos(self):
+        self.id_repuesto.set("")
+        self.nombre_repuesto.set("")
+        self.precio_repuesto.set("")
+
+class MenuPrincipal:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Sistema de Gestión")
+        self.root.geometry("500x400")
+        
+        # Frame principal
+        main_frame = ttk.Frame(self.root, padding="20")
+        main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
+        
+        # Título
+        ttk.Label(
+            main_frame, 
+            text="Sistema de Gestión de Órdenes",
+            font=('Helvetica', 16, 'bold')
+        ).grid(row=0, column=0, columnspan=2, pady=20)
+        
+        # Botones principales
+        ttk.Button(
+            main_frame,
+            text="Registrar Cliente",
+            command=self.abrir_registro_cliente,
+            width=30
+        ).grid(row=1, column=0, columnspan=2, pady=10)
+        
+        ttk.Button(
+            main_frame,
+            text="Registrar Repuesto",
+            command=self.abrir_registro_repuesto,
+            width=30
+        ).grid(row=2, column=0, columnspan=2, pady=10)
+        
+        ttk.Button(
+            main_frame,
+            text="Gestionar Órdenes",
+            command=self.abrir_gestion_ordenes,
+            width=30
+        ).grid(row=3, column=0, columnspan=2, pady=10)
+        
+    def abrir_registro_cliente(self):
+        VentanaCliente(self.root)
+    
+    def abrir_registro_repuesto(self):
+        VentanaRepuesto(self.root)
+    
+    def abrir_gestion_ordenes(self):
+        AplicacionOrdenes(Toplevel(self.root))
+
 class AplicacionOrdenes:
     def __init__(self, root):
         self.root = root
-        self.root.title("Sistema de Gestión de Órdenes")
+        self.root.title("Gestión de Órdenes")
         self.root.geometry("800x600")
 
         # Variables para almacenar datos
@@ -19,90 +148,32 @@ class AplicacionOrdenes:
         self.main_frame = ttk.Frame(self.root, padding="10")
         self.main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
 
-        # Sección Cliente
-        ttk.Label(self.main_frame, text="Datos del Cliente").grid(row=0, column=0, columnspan=2)
-        
-        ttk.Label(self.main_frame, text="Documento:").grid(row=1, column=0)
-        self.doc_cliente = StringVar()
-        ttk.Entry(self.main_frame, textvariable=self.doc_cliente).grid(row=1, column=1)
-
-        ttk.Label(self.main_frame, text="Nombre:").grid(row=2, column=0)
-        self.nombre_cliente = StringVar()
-        ttk.Entry(self.main_frame, textvariable=self.nombre_cliente).grid(row=2, column=1)
-
         # Sección Orden
-        ttk.Label(self.main_frame, text="Datos de la Orden").grid(row=3, column=0, columnspan=2)
+        ttk.Label(self.main_frame, text="Nueva Orden", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
         
-        ttk.Label(self.main_frame, text="No. Orden:").grid(row=4, column=0)
+        ttk.Label(self.main_frame, text="No. Orden:").grid(row=1, column=0)
         self.no_orden = StringVar()
-        ttk.Entry(self.main_frame, textvariable=self.no_orden).grid(row=4, column=1)
+        ttk.Entry(self.main_frame, textvariable=self.no_orden).grid(row=1, column=1)
 
-        ttk.Label(self.main_frame, text="No. Mesa:").grid(row=5, column=0)
+        ttk.Label(self.main_frame, text="No. Mesa:").grid(row=2, column=0)
         self.no_mesa = StringVar()
-        ttk.Entry(self.main_frame, textvariable=self.no_mesa).grid(row=5, column=1)
-
-        # Sección Repuestos
-        ttk.Label(self.main_frame, text="Repuestos").grid(row=6, column=0, columnspan=2)
-        
-        # Lista de repuestos disponibles
-        self.repuestos_listbox = Listbox(self.main_frame, height=5)
-        self.repuestos_listbox.grid(row=7, column=0, columnspan=2)
+        ttk.Entry(self.main_frame, textvariable=self.no_mesa).grid(row=2, column=1)
 
         # Botones
-        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=8, column=0)
-        ttk.Button(self.main_frame, text="Agregar Repuesto", command=self.agregar_repuesto_ventana).grid(row=8, column=1)
-        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=9, column=0, columnspan=2)
-
-        # Inicializar algunos repuestos de ejemplo
-        self.inicializar_repuestos()
-
-    def inicializar_repuestos(self):
-        repuestos_iniciales = [
-            Repuesto(1, 'Filtro de aire', 50.0),
-            Repuesto(2, 'Bujía', 20.0),
-            Repuesto(3, 'Aceite de motor', 35.0)
-        ]
-        for repuesto in repuestos_iniciales:
-            self.repuestos.append(repuesto)
-            self.repuestos_listbox.insert(END, f"{repuesto.nombre} - ${repuesto.precio}")
+        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=3, column=0, columnspan=2, pady=10)
+        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=4, column=0, columnspan=2)
 
     def crear_orden(self):
         try:
-            # Crear cliente
-            cliente = Cliente(
-                self.doc_cliente.get(),
-                self.nombre_cliente.get(),
-                True
-            )
-
-            # Crear orden
             orden = Orden(
                 int(self.no_orden.get()),
                 int(self.no_mesa.get())
             )
-            
-            orden.agregarCliente(cliente)
             self.ordenes.append(orden)
             self.orden_actual = orden
-            
             messagebox.showinfo("Éxito", "Orden creada correctamente")
-            
         except ValueError as e:
             messagebox.showerror("Error", "Por favor ingrese valores válidos")
-
-    def agregar_repuesto_ventana(self):
-        if not self.orden_actual:
-            messagebox.showerror("Error", "Primero debe crear una orden")
-            return
-
-        seleccion = self.repuestos_listbox.curselection()
-        if not seleccion:
-            messagebox.showerror("Error", "Por favor seleccione un repuesto")
-            return
-
-        repuesto = self.repuestos[seleccion[0]]
-        self.orden_actual.agregarRepuesto(repuesto)
-        messagebox.showinfo("Éxito", f"Repuesto {repuesto.nombre} agregado a la orden")
 
     def mostrar_ordenes(self):
         if not self.ordenes:
@@ -123,7 +194,7 @@ class AplicacionOrdenes:
 
 def main():
     root = Tk()
-    app = AplicacionOrdenes(root)
+    app = MenuPrincipal(root)
     root.mainloop()
 
 if __name__ == "__main__":
