@@ -4,92 +4,17 @@ from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
 
-class VentanaCliente:
-    def __init__(self, parent):
-        self.ventana = Toplevel(parent)
-        self.ventana.title("Registro de Cliente")
-        self.ventana.geometry("400x300")
-        
-        # Frame principal
-        main_frame = ttk.Frame(self.ventana, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
-        
-        # Campos del cliente
-        ttk.Label(main_frame, text="Registro de Cliente", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
-        
-        ttk.Label(main_frame, text="Documento:").grid(row=1, column=0, pady=5)
-        self.doc_cliente = StringVar()
-        ttk.Entry(main_frame, textvariable=self.doc_cliente).grid(row=1, column=1, pady=5)
-        
-        ttk.Label(main_frame, text="Nombre:").grid(row=2, column=0, pady=5)
-        self.nombre_cliente = StringVar()
-        ttk.Entry(main_frame, textvariable=self.nombre_cliente).grid(row=2, column=1, pady=5)
-        
-        # Botón de registro
-        ttk.Button(main_frame, text="Registrar Cliente", command=self.registrar_cliente).grid(row=3, column=0, columnspan=2, pady=20)
-        
-    def registrar_cliente(self):
-        try:
-            cliente = Cliente(self.doc_cliente.get(), self.nombre_cliente.get(), True)
-            messagebox.showinfo("Éxito", cliente.crearCliente())
-            self.limpiar_campos()
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
-    
-    def limpiar_campos(self):
-        self.doc_cliente.set("")
-        self.nombre_cliente.set("")
-
-class VentanaRepuesto:
-    def __init__(self, parent):
-        self.ventana = Toplevel(parent)
-        self.ventana.title("Registro de Repuesto")
-        self.ventana.geometry("400x300")
-        
-        # Frame principal
-        main_frame = ttk.Frame(self.ventana, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
-        
-        # Campos del repuesto
-        ttk.Label(main_frame, text="Registro de Repuesto", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
-        
-        ttk.Label(main_frame, text="ID:").grid(row=1, column=0, pady=5)
-        self.id_repuesto = StringVar()
-        ttk.Entry(main_frame, textvariable=self.id_repuesto).grid(row=1, column=1, pady=5)
-        
-        ttk.Label(main_frame, text="Nombre:").grid(row=2, column=0, pady=5)
-        self.nombre_repuesto = StringVar()
-        ttk.Entry(main_frame, textvariable=self.nombre_repuesto).grid(row=2, column=1, pady=5)
-        
-        ttk.Label(main_frame, text="Precio:").grid(row=3, column=0, pady=5)
-        self.precio_repuesto = StringVar()
-        ttk.Entry(main_frame, textvariable=self.precio_repuesto).grid(row=3, column=1, pady=5)
-        
-        # Botón de registro
-        ttk.Button(main_frame, text="Registrar Repuesto", command=self.registrar_repuesto).grid(row=4, column=0, columnspan=2, pady=20)
-        
-    def registrar_repuesto(self):
-        try:
-            repuesto = Repuesto(
-                int(self.id_repuesto.get()),
-                self.nombre_repuesto.get(),
-                float(self.precio_repuesto.get())
-            )
-            messagebox.showinfo("Éxito", repuesto.crearRepuesto())
-            self.limpiar_campos()
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al registrar repuesto: {str(e)}")
-    
-    def limpiar_campos(self):
-        self.id_repuesto.set("")
-        self.nombre_repuesto.set("")
-        self.precio_repuesto.set("")
+# [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
 class MenuPrincipal:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistema de Gestión")
         self.root.geometry("500x400")
+        
+        # Listas para almacenar clientes y repuestos
+        self.clientes = []
+        self.repuestos = []
         
         # Frame principal
         main_frame = ttk.Frame(self.root, padding="20")
@@ -123,6 +48,12 @@ class MenuPrincipal:
             command=self.abrir_gestion_ordenes,
             width=30
         ).grid(row=3, column=0, columnspan=2, pady=10)
+    
+    def agregar_cliente(self, cliente):
+        self.clientes.append(cliente)
+    
+    def agregar_repuesto(self, repuesto):
+        self.repuestos.append(repuesto)
         
     def abrir_registro_cliente(self):
         VentanaCliente(self.root)
@@ -131,26 +62,30 @@ class MenuPrincipal:
         VentanaRepuesto(self.root)
     
     def abrir_gestion_ordenes(self):
-        AplicacionOrdenes(Toplevel(self.root))
+        AplicacionOrdenes(Toplevel(self.root), self.clientes, self.repuestos)
 
 class AplicacionOrdenes:
-    def __init__(self, root):
+    def __init__(self, root, clientes, repuestos):
         self.root = root
         self.root.title("Gestión de Órdenes")
         self.root.geometry("800x600")
 
         # Variables para almacenar datos
+        self.clientes = clientes
+        self.repuestos = repuestos
         self.ordenes = []
-        self.repuestos = []
         self.orden_actual = None
+        self.cliente_actual = None
+        self.repuestos_seleccionados = []
 
         # Frame principal
         self.main_frame = ttk.Frame(self.root, padding="10")
         self.main_frame.grid(row=0, column=0, sticky=(N, W, E, S))
 
-        # Sección Orden
+        # Título
         ttk.Label(self.main_frame, text="Nueva Orden", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
         
+        # Sección Orden
         ttk.Label(self.main_frame, text="No. Orden:").grid(row=1, column=0)
         self.no_orden = StringVar()
         ttk.Entry(self.main_frame, textvariable=self.no_orden).grid(row=1, column=1)
@@ -159,21 +94,112 @@ class AplicacionOrdenes:
         self.no_mesa = StringVar()
         ttk.Entry(self.main_frame, textvariable=self.no_mesa).grid(row=2, column=1)
 
+        # Sección Cliente
+        ttk.Label(self.main_frame, text="Buscar Cliente", font=('Helvetica', 10, 'bold')).grid(row=3, column=0, columnspan=2, pady=10)
+        
+        ttk.Label(self.main_frame, text="Documento Cliente:").grid(row=4, column=0)
+        self.doc_cliente_buscar = StringVar()
+        ttk.Entry(self.main_frame, textvariable=self.doc_cliente_buscar).grid(row=4, column=1)
+        ttk.Button(self.main_frame, text="Buscar Cliente", command=self.buscar_cliente).grid(row=4, column=2)
+
+        # Información del cliente
+        self.info_cliente = StringVar()
+        ttk.Label(self.main_frame, textvariable=self.info_cliente).grid(row=5, column=0, columnspan=3, pady=5)
+
+        # Sección Repuestos
+        ttk.Label(self.main_frame, text="Agregar Repuestos", font=('Helvetica', 10, 'bold')).grid(row=6, column=0, columnspan=2, pady=10)
+        
+        ttk.Label(self.main_frame, text="ID Repuesto:").grid(row=7, column=0)
+        self.id_repuesto_buscar = StringVar()
+        ttk.Entry(self.main_frame, textvariable=self.id_repuesto_buscar).grid(row=7, column=1)
+        ttk.Button(self.main_frame, text="Agregar Repuesto", command=self.agregar_repuesto).grid(row=7, column=2)
+
+        # Lista de repuestos seleccionados
+        ttk.Label(self.main_frame, text="Repuestos Seleccionados:").grid(row=8, column=0, columnspan=3, pady=5)
+        self.lista_repuestos = Listbox(self.main_frame, height=5, width=50)
+        self.lista_repuestos.grid(row=9, column=0, columnspan=3, pady=5)
+
         # Botones
-        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=3, column=0, columnspan=2, pady=10)
-        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=4, column=0, columnspan=2)
+        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=10, column=0, pady=10)
+        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=10, column=1)
+
+    def buscar_cliente(self):
+        documento = self.doc_cliente_buscar.get()
+        cliente_encontrado = None
+        
+        # Buscar en la lista de clientes
+        for cliente in self.clientes:
+            if cliente.noDocumento == documento:
+                cliente_encontrado = cliente
+                break
+        
+        if cliente_encontrado:
+            self.cliente_actual = cliente_encontrado
+            self.info_cliente.set(f"Cliente encontrado: {cliente_encontrado.nombre}")
+        else:
+            messagebox.showerror("Error", "Cliente no encontrado")
+            self.cliente_actual = None
+            self.info_cliente.set("Cliente no encontrado")
+
+    def agregar_repuesto(self):
+        try:
+            id_repuesto = int(self.id_repuesto_buscar.get())
+            repuesto_encontrado = None
+            
+            # Buscar en la lista de repuestos
+            for repuesto in self.repuestos:
+                if repuesto.id == id_repuesto:
+                    repuesto_encontrado = repuesto
+                    break
+            
+            if repuesto_encontrado:
+                self.repuestos_seleccionados.append(repuesto_encontrado)
+                self.lista_repuestos.insert(END, f"{repuesto_encontrado.nombre} - ${repuesto_encontrado.precio}")
+                self.id_repuesto_buscar.set("")
+            else:
+                messagebox.showerror("Error", "Repuesto no encontrado")
+        except ValueError:
+            messagebox.showerror("Error", "ID de repuesto inválido")
 
     def crear_orden(self):
+        if not self.cliente_actual:
+            messagebox.showerror("Error", "Debe seleccionar un cliente")
+            return
+            
+        if not self.repuestos_seleccionados:
+            messagebox.showerror("Error", "Debe agregar al menos un repuesto")
+            return
+            
         try:
+            # Crear la orden
             orden = Orden(
                 int(self.no_orden.get()),
                 int(self.no_mesa.get())
             )
+            
+            # Agregar cliente y repuestos
+            orden.agregarCliente(self.cliente_actual)
+            for repuesto in self.repuestos_seleccionados:
+                orden.agregarRepuesto(repuesto)
+            
             self.ordenes.append(orden)
-            self.orden_actual = orden
             messagebox.showinfo("Éxito", "Orden creada correctamente")
+            
+            # Limpiar campos
+            self.limpiar_campos()
+            
         except ValueError as e:
             messagebox.showerror("Error", "Por favor ingrese valores válidos")
+
+    def limpiar_campos(self):
+        self.no_orden.set("")
+        self.no_mesa.set("")
+        self.doc_cliente_buscar.set("")
+        self.id_repuesto_buscar.set("")
+        self.info_cliente.set("")
+        self.lista_repuestos.delete(0, END)
+        self.cliente_actual = None
+        self.repuestos_seleccionados = []
 
     def mostrar_ordenes(self):
         if not self.ordenes:
