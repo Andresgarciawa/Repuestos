@@ -64,6 +64,58 @@ class MenuPrincipal:
     def abrir_gestion_ordenes(self):
         AplicacionOrdenes(Toplevel(self.root), self.clientes, self.repuestos)
 
+class VentanaCliente:
+    def __init__(self, root):
+        self.ventana = Toplevel(root)
+        self.ventana.title("Registro de Cliente")
+        self.ventana.geometry("400x300")
+        
+        # Implementa aquí los campos para registrar un cliente
+        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
+        self.nombre = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
+        
+        ttk.Label(self.ventana, text="No. Documento:").grid(row=1, column=0)
+        self.noDocumento = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.noDocumento).grid(row=1, column=1)
+        
+        # Botón para guardar cliente
+        ttk.Button(self.ventana, text="Guardar", command=self.guardar_cliente).grid(row=2, column=0, columnspan=2)
+    
+    def guardar_cliente(self):
+        # Aquí debes crear un nuevo objeto Cliente y agregarlo a la lista de clientes
+        nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
+        # Asumiendo que tienes acceso al MenuPrincipal para agregar el cliente
+        # Necesitarás pasar una referencia al MenuPrincipal o usar un método de clase
+        self.ventana.destroy()
+
+class VentanaRepuesto:
+    def __init__(self, root):
+        self.ventana = Toplevel(root)
+        self.ventana.title("Registro de Repuesto")
+        self.ventana.geometry("400x300")
+        
+        # Implementa aquí los campos para registrar un repuesto
+        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
+        self.nombre = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
+        
+        ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
+        self.id = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
+        
+        ttk.Label(self.ventana, text="Precio:").grid(row=2, column=0)
+        self.precio = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=2, column=1)
+        
+        # Botón para guardar repuesto
+        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=3, column=0, columnspan=2)
+
+    def guardar_repuesto(self):
+        # Aquí debes crear un nuevo objeto Repuesto y agregarlo a la lista de repuestos
+        nuevo_repuesto = Repuesto(int(self.id.get()), self.nombre.get(), float(self.precio.get()))
+        # Necesitarás modificar el código para agregar el repuesto
+        self.ventana.destroy()        
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root
