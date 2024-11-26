@@ -48,6 +48,15 @@ class MenuPrincipal:
             command=self.abrir_gestion_ordenes,
             width=30
         ).grid(row=3, column=0, columnspan=2, pady=10)
+
+        # Etiqueta de versión con un estilo más discreto
+        ttk.Label(
+            main_frame, 
+            text="v1.0.0 | © 2024",
+            font=('Helvetica', 8),
+            # Color gris
+            foreground='gray'  
+        ).grid(row=4, column=0, columnspan=2, pady=10)
     
     def agregar_cliente(self, cliente):
         self.clientes.append(cliente)
