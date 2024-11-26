@@ -116,6 +116,28 @@ class VentanaRepuesto:
         nuevo_repuesto = Repuesto(int(self.id.get()), self.nombre.get(), float(self.precio.get()))
         # Necesitarás modificar el código para agregar el repuesto
         self.ventana.destroy()        
+
+class VentanaVendedor:
+    def __init__(self, root):
+        self.ventana = Toplevel(root)
+        self.ventana.title("Registro de Repuesto")
+        self.ventana.geometry("400x300")
+        
+        # Implementa aquí los campos para registrar un repuesto
+        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
+        self.nombre = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
+        
+        ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
+        self.id = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
+        
+        ttk.Label(self.ventana, text="Precio:").grid(row=2, column=0)
+        self.precio = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=2, column=1)
+        
+        # Botón para guardar repuesto
+        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=3, column=0, columnspan=2)
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root

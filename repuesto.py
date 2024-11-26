@@ -6,3 +6,7 @@ class Repuesto:
 
     def crearRepuesto(self):
         return f'Repuesto creado: {self.nombre}, ID: {self.id}, Precio: {self.precio}'
+
+    def mostrarRepuesto(self):
+        return f'Repuesto: {self.nombre}, ID: {self.id}, Precio: {self.precio}'
+    
