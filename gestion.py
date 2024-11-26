@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
+from pago import Pago
 
 # [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
@@ -16,6 +17,8 @@ class MenuPrincipal:
        # self.vendedor = []
         self.clientes = []
         self.repuestos = []
+        self.ordenes = []
+        self.pagos = []
         
         # Frame principal
         main_frame = ttk.Frame(self.root, padding="20")
@@ -88,6 +91,9 @@ class MenuPrincipal:
     
     def agregar_repuesto(self, repuesto):
         self.repuestos.append(repuesto)
+
+    def agregar_pago(self):
+        self.orden.append()
         
     def abrir_registro_cliente(self):
         VentanaCliente(self.root)
@@ -97,6 +103,9 @@ class MenuPrincipal:
     
     def abrir_gestion_ordenes(self):
         AplicacionOrdenes(Toplevel(self.root), self.clientes, self.repuestos)
+
+    def agregar_pago(self, pago):
+        self.orden.append(pago)
 
 class VentanaCliente:
     def __init__(self, root):
@@ -200,6 +209,7 @@ class VentanaVendedor:
         
         # Botón para guardar repuesto
         ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=3, column=0, columnspan=2)
+
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root
@@ -255,9 +265,15 @@ class AplicacionOrdenes:
         self.lista_repuestos = Listbox(self.main_frame, height=5, width=50)
         self.lista_repuestos.grid(row=9, column=0, columnspan=3, pady=5)
 
+        #Ingresar pago
+        ttk.Label(self.main_frame, text="Ingresar Pago").grid(row=10, column=0, columnspan=2, pady=10)
+        self.pago = StringVar()
+        ttk.Entry(self.main_frame, textvariable=self.pago).grid(row=10, column=1, columnspan=2, pady=10)
+                                                                
+
         # Botones
-        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=10, column=0, pady=10)
-        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=10, column=1)
+        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=11, column=0, pady=10)
+        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=11, column=1)
 
     def buscar_cliente(self):
         documento = self.doc_cliente_buscar.get()
@@ -296,6 +312,15 @@ class AplicacionOrdenes:
                 messagebox.showerror("Error", "Repuesto no encontrado")
         except ValueError:
             messagebox.showerror("Error", "ID de repuesto inválido")
+
+    def agregar_pago(self):
+        try:
+            monto = float(self.monto_pago.get())
+            self.pagos.append(monto)
+            self.lista_pagos.insert(END, f"Pago de ${monto}")
+            self.monto_pago.set("")
+        except ValueError:
+            messagebox.showerror("Error", "Monto de pago inválido")
 
     def crear_orden(self):
         if not self.cliente_actual:
