@@ -108,23 +108,51 @@ class VentanaRepuesto:
         ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
         self.nombre = StringVar()
         ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
-        
+
+        #Id del producto
         ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
-        
+
+        #cantidad de producto
+        ttk.Label(self.ventana, text="Cantidad:").grid(row=2, column=0)
+        self.cantidad = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.cantidad).grid(row=2, column=1)
+
+        #precio del producto
         ttk.Label(self.ventana, text="Precio:").grid(row=2, column=0)
         self.precio = StringVar()
         ttk.Entry(self.ventana, textvariable=self.precio).grid(row=2, column=1)
+
+        #activacion de producto
+        ttk.Label(self.ventana, text="Activado:").grid(row=3, column=0)
+        self.activado = StringVar()
+        ttk.Checkbutton(self.ventana, variable=self.activado).grid(row=3, column=1)
+        
+        #inactivacion de producto
+        ttk.Label(self.ventana, text="Inactivo:").grid(row=4, column=0)
+        self.inactivo = StringVar()
+        ttk.Checkbutton(self.ventana, variable=self.inactivo).grid(row=4, column=1)
+
+        #solo debe estar activo un checkbutton si esta activo uno desmarca el otro
+        self.activado.set(True)
+        self.inactivo.set(False)
         
         # Botón para guardar repuesto
-        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=3, column=0, columnspan=2)
+        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=5, column=0, columnspan=2)
 
     def guardar_repuesto(self):
         # Aquí debes crear un nuevo objeto Repuesto y agregarlo a la lista de repuestos
-        nuevo_repuesto = Repuesto(int(self.id.get()), self.nombre.get(), float(self.precio.get()))
+        nuevo_repuesto = Repuesto(int(self.id.get()), self.nombre.get(), float(self.precio.get()), float(self.cantidad.get), self.activo.get())
         # Necesitarás modificar el código para agregar el repuesto
-        self.ventana.destroy()        
+        self.ventana.destroy()   
+
+    def actualizarRepuesto(self):
+        # Se acualiza el repuesto
+        self.id.set("1")
+        self.nombre.set("Repuesto 1")
+        self.precio.set("10.0")
+        self.cantidad,set("10")
 
 class VentanaVendedor:
     def __init__(self, root):
