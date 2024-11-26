@@ -10,9 +10,10 @@ class MenuPrincipal:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistema de Gestión")
-        self.root.geometry("500x400")
+        self.root.geometry("700x500")
         
         # Listas para almacenar clientes y repuestos
+       # self.vendedor = []
         self.clientes = []
         self.repuestos = []
         
@@ -27,27 +28,51 @@ class MenuPrincipal:
             font=('Helvetica', 16, 'bold')
         ).grid(row=0, column=0, columnspan=2, pady=20)
         
-        # Botones principales
+        # Cargar imágenes 
+        self.img_vendedor = PhotoImage(file="iconos/vendedor.png")
+        self.img_cliente = PhotoImage(file="iconos/cliente.png") 
+        self.img_repuesto = PhotoImage(file="iconos/repuesto.png")
+        self.img_orden = PhotoImage(file="iconos/orden.png")
+        
+        # Botón Registrar vendedor con imagen
+        ttk.Button(
+            main_frame,
+            text="Registrar Vendedor",
+            image=self.img_vendedor,  # Agrega la imagen
+           compound=LEFT,  # Coloca la imagen a la izquierda del texto
+            #command=self.abrir_registro_vendedor,
+            width=30
+       ).grid(row=1, column=0, columnspan=2, pady=10)
+
+        # Botón Registrar Cliente con imagen
         ttk.Button(
             main_frame,
             text="Registrar Cliente",
+            image=self.img_cliente,  # Agrega la imagen
+            compound=LEFT,  # Coloca la imagen a la izquierda del texto
             command=self.abrir_registro_cliente,
             width=30
-        ).grid(row=1, column=0, columnspan=2, pady=10)
+        ).grid(row=1, column=2, columnspan=2, pady=10)
         
+        # Botón Registrar Repuesto con imagen
         ttk.Button(
             main_frame,
             text="Registrar Repuesto",
+            image=self.img_repuesto,
+            compound=LEFT,
             command=self.abrir_registro_repuesto,
             width=30
         ).grid(row=2, column=0, columnspan=2, pady=10)
         
+        # Botón Gestionar Órdenes con imagen
         ttk.Button(
             main_frame,
             text="Gestionar Órdenes",
+            image=self.img_orden,
+            compound=LEFT,
             command=self.abrir_gestion_ordenes,
             width=30
-        ).grid(row=3, column=0, columnspan=2, pady=10)
+        ).grid(row=2, column=2, columnspan=2, pady=10)
 
         # Etiqueta de versión con un estilo más discreto
         ttk.Label(
@@ -56,7 +81,7 @@ class MenuPrincipal:
             font=('Helvetica', 8),
             # Color gris
             foreground='gray'  
-        ).grid(row=4, column=0, columnspan=2, pady=10)
+        ).grid(row=3, column=0, columnspan=2, pady=10)
     
     def agregar_cliente(self, cliente):
         self.clientes.append(cliente)
