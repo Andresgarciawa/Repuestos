@@ -4,7 +4,6 @@ from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
 from pago import Pago
-from datetime import datetime
 
 # [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
