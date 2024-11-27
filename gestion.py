@@ -4,6 +4,7 @@ from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
 from pago import Pago
+from datetime import datetime
 
 # [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
@@ -223,6 +224,7 @@ class AplicacionOrdenes:
         self.orden_actual = None
         self.cliente_actual = None
         self.repuestos_seleccionados = []
+        self.pagos = []
 
         # Frame principal
         self.main_frame = ttk.Frame(self.root, padding="10")
@@ -313,14 +315,25 @@ class AplicacionOrdenes:
         except ValueError:
             messagebox.showerror("Error", "ID de repuesto inválido")
 
-    def agregar_pago(self):
-        try:
-            monto = float(self.monto_pago.get())
-            self.pagos.append(monto)
-            self.lista_pagos.insert(END, f"Pago de ${monto}")
-            self.monto_pago.set("")
-        except ValueError:
-            messagebox.showerror("Error", "Monto de pago inválido")
+def agregar_pago(self):
+    try:
+        # Usar el método correcto para obtener el valor del pago
+        monto = float(self.pago.get())
+        
+        # Crear un objeto Pago con la fecha actual
+        from datetime import datetime
+        nuevo_pago = Pago(datetime.now(), monto, "Efectivo")  # Puedes cambiar el tipo de pago según sea necesario
+        
+        # Agregar el pago a la lista de pagos
+        self.pagos.append(nuevo_pago)
+        
+        # Mostrar mensaje de confirmación
+        messagebox.showinfo("Pago", f"Pago de ${monto} registrado correctamente")
+        
+        # Limpiar el campo de pago
+        self.pago.set("")
+    except ValueError:
+        messagebox.showerror("Error", "Monto de pago inválido")
 
     def crear_orden(self):
         if not self.cliente_actual:
