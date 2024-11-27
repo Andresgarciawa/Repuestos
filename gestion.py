@@ -80,7 +80,7 @@ class MenuPrincipal:
         # Etiqueta de versión con un estilo más discreto
         ttk.Label(
             main_frame, 
-            text="v1.0.0 | © 2024",
+            text="v1.0.6 | © 2024",
             font=('Helvetica', 8),
             # Color gris
             foreground='gray'  
