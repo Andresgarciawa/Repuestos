@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+from gestion import main as gestion_main  # Import the main function from gestion.py
 
 # Datos de login quemados en el código
 login_usuario = "usuario123"
@@ -13,6 +14,8 @@ def verificar_login():
     
     if usuario == login_usuario and contraseña == login_contraseña:
         messagebox.showinfo("Inicio de Sesión", "Inicio de sesión exitoso")
+        ventana.destroy()  # Close the login window
+        gestion_main()  # Open the main application window
     else:
         messagebox.showerror("Error", "Usuario o contraseña incorrectos")
 
@@ -45,7 +48,7 @@ ttk.Label(
     text="v1.0.0 | © 2024",
     font=('Helvetica', 8),
     foreground='gray'
-).pack(pady=10)  # Cambié grid a pack para mantener la consistencia
+).pack(pady=10)
 
 # Ejecutar la ventana
 ventana.mainloop()
