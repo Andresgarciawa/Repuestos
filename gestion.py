@@ -81,7 +81,7 @@ class MenuPrincipal:
         # Etiqueta de versión con un estilo más discreto
         ttk.Label(
             main_frame, 
-            text="v1.0.5 | © 2024",
+            text="v1.0.0 | © 2024",
             font=('Helvetica', 8),
             # Color gris
             foreground='gray'  
@@ -110,32 +110,28 @@ class MenuPrincipal:
 
 class VentanaCliente:
     def __init__(self, root):
-        self.root = root
         self.ventana = Toplevel(root)
         self.ventana.title("Registro de Cliente")
         self.ventana.geometry("400x300")
         
         # Implementa aquí los campos para registrar un cliente
-        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=2)
+        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
         self.nombre = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=3)
+        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
         
-        ttk.Label(self.ventana, text="No. Documento:").grid(row=1, column=2)
+        ttk.Label(self.ventana, text="No. Documento:").grid(row=1, column=0)
         self.noDocumento = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.noDocumento).grid(row=1, column=3)
+        ttk.Entry(self.ventana, textvariable=self.noDocumento).grid(row=1, column=1)
         
         # Botón para guardar cliente
         ttk.Button(self.ventana, text="Guardar", command=self.guardar_cliente).grid(row=2, column=0, columnspan=2)
-
-        #Boton para modificar cliente
-        ttk.Button(self.ventana, text="Modificar", command=self.modificar_cliente).grid(row=2, column=2, columnspan=2)
-
-        #boton para consultar cliente
-        ttk.Button(self.ventana, text="Consultar", command=self.consultar_cliente)
     
-    #utiliza de cliente todos los metodos
     def guardar_cliente(self):
-        cliente = Cliente(self.nombre.get(), self.noDocumento.get())
+        # Aquí debes crear un nuevo objeto Cliente y agregarlo a la lista de clientes
+        nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
+        # Asumiendo que tienes acceso al MenuPrincipal para agregar el cliente
+        # Necesitarás pasar una referencia al MenuPrincipal o usar un método de clase
+        self.ventana.destroy()
 
 class VentanaRepuesto:
     def __init__(self, root):
@@ -212,7 +208,7 @@ class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root
         self.root.title("Gestión de Órdenes")
-        self.root.geometry("900x600")
+        self.root.geometry("800x600")
 
         # Variables para almacenar datos
         self.clientes = clientes
@@ -270,7 +266,13 @@ class AplicacionOrdenes:
         ttk.Entry(self.main_frame, textvariable=self.pago).grid(row=10, column=1, columnspan=2, pady=10)
                                                                 
 
-        # Botones para crear orden y mostrar orden
+        # Botones
+        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=11, column=0, pady=10)
+        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=11, column=1)
+
+        #Botones
+        ttk.Label(self.main_frame, text="Sistema de Gestión de Órdenes", font=('Helvetica', 16, 'bold')).grid(row=0, column=0, columnspan=2, pady=20)
+        ttk.Button(self.main_frame, text="Exportar Inventario",command=self.generar_archivo_inventario,width=30).grid(row=4, column=0, columnspan=2, pady=10)
 
     def buscar_cliente(self):
         documento = self.doc_cliente_buscar.get()
@@ -386,6 +388,43 @@ def agregar_pago(self):
             texto_ordenes.insert(END, orden.mostrarOrden() + "\n\n")
 
         texto_ordenes.config(state=DISABLED)
+
+# Nueva funcionalidad: Generar archivo del inventario
+    def generar_archivo_inventario(self):
+        ruta_archivo = os.path.join(os.getcwd(), "inventario.txt")
+        with open(ruta_archivo, "w", encoding="utf-8") as archivo:
+            archivo.write("INVENTARIO GENERAL\n")
+            archivo.write("="*30 + "\n")
+            
+            # Exportar clientes
+            archivo.write("Clientes Registrados:\n")
+            if self.clientes:
+                for cliente in self.clientes:
+                    archivo.write(f"- {cliente.nombre} ({cliente.noDocumento})\n")
+            else:
+                archivo.write("No hay clientes registrados.\n")
+            
+            archivo.write("\n")
+
+            # Exportar repuestos
+            archivo.write("Repuestos Disponibles:\n")
+            if self.repuestos:
+                for repuesto in self.repuestos:
+                    archivo.write(f"- {repuesto.id}: {repuesto.nombre} | Cantidad: {repuesto.cantidad} | Precio: {repuesto.precio}\n")
+            else:
+                archivo.write("No hay repuestos registrados.\n")
+            
+            archivo.write("\n")
+            
+            # Exportar órdenes
+            archivo.write("Órdenes Registradas:\n")
+            if self.ordenes:
+                for orden in self.ordenes:
+                    archivo.write(orden.mostrarOrden() + "\n")
+            else:
+                archivo.write("No hay órdenes registradas.\n")
+                messagebox.showinfo("Éxito", f"Inventario exportado en: {ruta_archivo}")
+
 
 def main():
     root = Tk()
