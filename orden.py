@@ -1,12 +1,13 @@
 class Orden:
-    def __init__(self, noOrden, noMesa):
+    def __init__(self, noOrden, noMesa, pago):
         self.noOrden = noOrden
         self.noMesa = noMesa
         self.repuestos = []
         self.cliente = None
+        self.pago = None
 
     def crearOrden(self):
-        return f'Orden creada: {self.noOrden}, Mesa: {self.noMesa}'
+        return f'Orden creada: {self.noOrden}, Mesa: {self.noMesa}, Pago: {self.pago}'
 
     def mostrarOrden(self):
         repuestos_str = ', '.join([rep.nombre for rep in self.repuestos])
@@ -24,3 +25,7 @@ class Orden:
     def agregarCliente(self, cliente):
         self.cliente = cliente
         return f'Cliente agregado: {cliente.nombre}'
+    
+    def agregarpago(self, pago):
+        self.pago = pago
+        return f'Pago agregado: {pago}'
