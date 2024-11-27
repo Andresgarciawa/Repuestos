@@ -45,7 +45,7 @@ boton_login.pack(pady=10)
 # Etiqueta de versión con un estilo más discreto
 ttk.Label(
     ventana, 
-    text="v1.0.1 | © 2024",
+    text="v1.0.5 | © 2024",
     font=('Helvetica', 8),
     foreground='gray'
 ).pack(pady=10)

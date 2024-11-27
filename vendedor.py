@@ -3,9 +3,15 @@ class Vendedor:
         self.nombre = nombre
         self.ID = ID
 
-    def crearCliente(self):
+    #crear Vendedor
+    def crearVendedor(self):
         return f'Vendedor creado: {self.nombre}, Documento: {self.ID},'
 
-    def mostrarCliente(self):
+    #Mostrar Vendedor
+    def mostrarVendedor(self):
         return f'Vendedor: {self.nombre}, Documento: {self.ID},'
     
+    #Modificar vendedor
+    def modificarVendedor(self, nombre, ID):
+        self.nombre = nombre
+        self.ID = ID
