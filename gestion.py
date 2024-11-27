@@ -4,6 +4,7 @@ from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
 from pago import Pago
+import os
 
 # [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
