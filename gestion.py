@@ -44,7 +44,7 @@ class MenuPrincipal:
             text="Registrar Vendedor",
             image=self.img_vendedor,  # Agrega la imagen
            compound=LEFT,  # Coloca la imagen a la izquierda del texto
-            #command=self.abrir_registro_vendedor,
+            command=self.abrir_registro_vendedor,
             width=30
        ).grid(row=1, column=0, columnspan=2, pady=10)
 
