@@ -84,7 +84,7 @@ class MenuPrincipal:
             text="Soporte",
             #image=self.img_soporte,
             compound=LEFT,
-            #command=self.abrir_soporte,
+            command=self.abrir_soporte,
             width=30
             ).grid(row=3, column=0, columnspan=2, pady=10)
         
@@ -92,9 +92,9 @@ class MenuPrincipal:
         ttk.Button(
             main_frame,
             text="Reportes",
-            #image=self.img_reporte,
+            #image=self.img_orden,
             compound=LEFT,
-            #command=self.abrir_reportes,
+            command=self.abrir_reportes,
             width=30
             ).grid(row=3, column=2, columnspan=2, pady=10)
 
@@ -127,6 +127,13 @@ class MenuPrincipal:
 
     def agregar_pago(self, pago):
         self.orden.append(pago)
+    
+    def abrir_reportes(self):
+        VentanaReporte(self.root)
+
+    def abrir_soporte(self):
+        VentanaSoporte(self.root)
+
 
 class VentanaCliente:
     def __init__(self, root):
@@ -407,6 +414,38 @@ def agregar_pago(self):
 
         texto_ordenes.config(state=DISABLED)
 
+# Clase Ventana Soporte
+class VentanaSoporte:
+    def __init__(self, root):
+        self.ventana = Toplevel(root)
+        self.ventana.title("Soporte")
+        self.ventana.geometry("400x200")
+
+        ttk.Label(self.ventana, text="Correo de Soporte:").grid(row=0, column=0)
+        ttk.Label(self.ventana, text="soporte@gmail.com").grid(row=1, column=0)
+        ttk.Label(self.ventana, text="Personas de contacto:").grid(row=2, column=0)
+        ttk.Label(self.ventana, text="Wilson Andres Garcia").grid(row=3, column=0)
+        ttk.Label(self.ventana, text="Telefono:").grid(row=3, column=1)
+        ttk.Label(self.ventana, text="300 1234567").grid(row=3, column=2)
+        ttk.Label(self.ventana, text="Angel Camilo Gutierrez").grid(row=4, column=0)
+        ttk.Label(self.ventana, text="Telefono:").grid(row=4, column=1)
+        ttk.Label(self.ventana, text="300 1234567").grid(row=4, column=2)
+        ttk.Label(self.ventana, text="Wilson Misal").grid(row=5, column=0)
+        ttk.Label(self.ventana, text="Telefono:").grid(row=5, column=1)
+        ttk.Label(self.ventana, text="300 1234567").grid(row=5, column=2)
+
+        
+
+
+#Clase Ventana Reporte
+class VentanaReporte:
+    def __init__(self, root):
+        self.ventana = Toplevel(root)
+        self.ventana.title("Reporte")
+        self.ventana.geometry("600x400")
+        
+        ttk.Label(self.ventana, text="reporte:").grid(row=0, column=0)
+    
 #funcion de abrir registros
     def abrir_registro_cliente(self):
         VentanaCliente(self.root, self.agregar_cliente)
