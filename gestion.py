@@ -18,13 +18,11 @@ class MenuPrincipal:
         self.root.geometry("700x500")
         
         # Listas para almacenar clientes y repuestos
-       # self.vendedor = []
-        self.clientes = []
-        self.repuestos = []
+        self.clientes = []  # Se pasa como datoC en VentanaCliente
+        self.repuestos = []  # Se pasa como datoR en VentanaRepuesto
+        self.vendedor = []
         self.ordenes = []
         self.pagos = []
-        self.datoRepuesto = []
-        self.datoCliente = []
         
         # Frame principal
         main_frame = ttk.Frame(self.root, padding="20")
@@ -124,11 +122,11 @@ class MenuPrincipal:
         self.orden.append()
         
     def abrir_registro_cliente(self):
-        VentanaCliente(self.root)
+        VentanaCliente(self.root, self.clientes)
     
     def abrir_registro_repuesto(self):
-        VentanaRepuesto(self.root)
-    
+        VentanaRepuesto(self.root, self.repuestos)
+        
     def abrir_gestion_ordenes(self):
         AplicacionOrdenes(Toplevel(self.root), self.clientes, self.repuestos)
 
@@ -172,65 +170,57 @@ class VentanaCliente:
     def guardar_cliente(self):
         # Crear un nuevo cliente con los datos ingresados
         nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
-        self.dato.append(nuevo_cliente)  # Agregar el nuevo cliente a la lista
+        self.datoC.append(nuevo_cliente)  # Agregar el nuevo cliente a la lista
+        messagebox.showinfo("Éxito", "Cliente registrado exitosamente")
         self.ventana.destroy()  # Cerrar la ventana después de guardar
+
+    def limpiar_campos(self):
+        # Limpiar cliente
+        self.nombre.set("")
+        self.noDocumento.set("")
 
 class VentanaRepuesto:
     def __init__(self, root, datoR):
-        self.datoRepuesto = datoR  # Recibe self.dato de MenuPrincipal
+        self.datoRepuesto = datoR  # Recibe la lista de repuestos
         self.ventana = Toplevel(root)
         self.ventana.title("Registro de Repuesto")
         self.ventana.geometry("400x300")
         
-        # Implementa aquí los campos para registrar un repuesto
+        # Campos para registrar un repuesto
         ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
         self.nombre = StringVar()
         ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
 
-        # Id del producto
         ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
 
-        # Cantidad de producto
-        ttk.Label(self.ventana, text="Cantidad:").grid(row=2, column=0)
-        self.cantidad = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.cantidad).grid(row=2, column=1)
-
-        # Precio del producto
-        ttk.Label(self.ventana, text="Precio:").grid(row=3, column=0)
+        ttk.Label(self.ventana, text="Precio:").grid(row=2, column=0)
         self.precio = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=3, column=1)
+        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=2, column=1)
 
-        # Activación de producto
-        ttk.Label(self.ventana, text="Activado:").grid(row=4, column=0)
-        self.activado = StringVar()
-        ttk.Checkbutton(self.ventana, variable=self.activado).grid(row=4, column=1)
-
-        # Inactivación de producto
-        ttk.Label(self.ventana, text="Inactivo:").grid(row=5, column=0)
-        self.inactivo = StringVar()
-        ttk.Checkbutton(self.ventana, variable=self.inactivo).grid(row=5, column=1)
-
-        # Solo debe estar activo un Checkbutton, si está activo uno desmarca el otro
-        self.activado.set(True)
-        self.inactivo.set(False)
+        ttk.Label(self.ventana, text="Cantidad:").grid(row=3, column=0)
+        self.cantidad = StringVar()
+        ttk.Entry(self.ventana, textvariable=self.cantidad).grid(row=3, column=1)
         
         # Botón para guardar repuesto
-        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=6, column=0, columnspan=2)
+        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=4, column=0, columnspan=2)
 
     def guardar_repuesto(self):
-        # Crear el nuevo repuesto con los datos ingresados
-        nuevo_repuesto = Repuesto(
-            int(self.id.get()),  # Convertir a entero
-            self.nombre.get(),
-            float(self.precio.get()),  # Convertir a float
-            float(self.cantidad.get()),  # Convertir a float
-            self.activado.get() == 'True'  # Convertir a booleano
-        )
-        # Agregar el nuevo repuesto a self.dato
-        self.dato.append(nuevo_repuesto)
-        self.ventana.destroy()  # Cerrar la ventana de repuestos
+        try:
+            # Crear el nuevo repuesto con los datos ingresados
+            nuevo_repuesto = Repuesto(
+                int(self.id.get()),
+                self.nombre.get(),
+                float(self.precio.get()),
+                int(self.cantidad.get())
+            )
+            # Agregar el nuevo repuesto a la lista
+            self.datoRepuesto.append(nuevo_repuesto)
+            messagebox.showinfo("Éxito", "Repuesto registrado exitosamente")
+            self.ventana.destroy()  # Cerrar la ventana de repuestos
+        except ValueError as e:
+            messagebox.showerror("Error", f"Datos inválidos: {e}")
 
     def actualizar_repuesto(self):
         # Este método puede actualizar los campos con valores predefinidos si deseas
@@ -239,6 +229,12 @@ class VentanaRepuesto:
         self.precio.set("10.0")
         self.cantidad.set("10")
 
+    def limpiar_campos(self):
+        # Limpiar Repuesto
+        self.id.set("")
+        self.nombre.set("")
+        self.precio.set("")
+        self.cantidad.set("")
 
 class VentanaVendedor:
     def __init__(self, root): #se crea la clase de la ventana del vendedor 
@@ -254,6 +250,11 @@ class VentanaVendedor:
         ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
+
+    def limpiar_campos(self):
+        # Limpiar Vendedor
+        self.nombre.set("")
+        self.id.set("")
 
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
@@ -325,8 +326,9 @@ class AplicacionOrdenes:
     def buscar_cliente(self):
         documento = self.doc_cliente_buscar.get()
         cliente_encontrado = None
+
         for cliente in self.clientes:
-            if cliente.noDocumento == documento:
+            if cliente.no_documento == documento:  # Accede al atributo correcto
                 cliente_encontrado = cliente
                 break
 
@@ -357,41 +359,58 @@ class AplicacionOrdenes:
             messagebox.showerror("Error", "ID de repuesto inválido")
 
     def crear_orden(self):
+        # Validar que el cliente esté seleccionado
         if not self.cliente_actual:
             messagebox.showerror("Error", "Debe seleccionar un cliente")
             return
 
+        # Validar que se hayan agregado repuestos
         if not self.repuestos_seleccionados:
             messagebox.showerror("Error", "Debe agregar al menos un repuesto")
             return
 
         try:
+            # Validar y convertir los valores de no_orden y no_mesa
+            no_orden = int(self.no_orden.get())
+            no_mesa = int(self.no_mesa.get())
+        except ValueError:
+            messagebox.showerror("Error", "Los números de orden y mesa deben ser valores numéricos válidos")
+            return
+
+        # Verificar que el número de orden no esté duplicado
+        if any(orden.id_orden == no_orden for orden in self.ordenes):
+            messagebox.showerror("Error", "El número de orden ya existe")
+            return
+
+        try:
+            # Calcular el total de la orden y validar el monto de pago
             total = sum([repuesto.precio for repuesto in self.repuestos_seleccionados])
             pago = float(self.monto_pagado.get())
 
             if pago < total:
-                messagebox.showerror("Error", "El monto pagado es insuficiente")
+                messagebox.showerror("Error", f"El monto pagado ({pago}) es insuficiente. Total a pagar: {total}")
                 return
 
-            orden = Orden(
-                int(self.no_orden.get()),
-                int(self.no_mesa.get())
-            )
-
+            # Crear la orden
+            orden = Orden(no_orden, no_mesa)
             orden.agregarCliente(self.cliente_actual)
+
             for repuesto in self.repuestos_seleccionados:
                 orden.agregarRepuesto(repuesto)
 
-            # Registrar pago
+            # Registrar el pago
             nuevo_pago = Pago(orden.id_orden, pago)
             self.pagos.append(nuevo_pago)
 
+            # Guardar la orden en la lista
             self.ordenes.append(orden)
+
+            # Mostrar mensaje de éxito y limpiar los campos
             messagebox.showinfo("Éxito", "Orden creada correctamente")
             self.limpiar_campos()
 
         except ValueError:
-            messagebox.showerror("Error", "Por favor ingrese valores válidos")
+            messagebox.showerror("Error", "Por favor, ingrese valores válidos para el pago")
 
     def mostrar_ordenes(self):
         if not self.ordenes:
@@ -430,6 +449,23 @@ class AplicacionOrdenes:
 
         c.save()
         messagebox.showinfo("PDF Generado", f"El archivo PDF se generó correctamente: {os.path.abspath(archivo_pdf)}")
+
+    def limpiar_campos(self):
+        # Limpiar cliente
+        self.cliente_actual = None
+        self.info_cliente.set("Cliente no seleccionado")
+
+        # Limpiar repuestos seleccionados
+        self.repuestos_seleccionados = []
+        self.lista_repuestos.delete(0, END)
+
+        # Limpiar entradas de texto
+        self.no_orden.set("")
+        self.no_mesa.set("")
+        self.monto_pagado.set("")
+        self.id_repuesto_buscar.set("")
+        self.doc_cliente_buscar.set("")
+
 
 
 # Clase Ventana Soporte

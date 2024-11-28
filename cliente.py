@@ -3,9 +3,10 @@ class Cliente:
         self.noDocumento = noDocumento
         self.nombre = nombre
 
-    #Crear cliente
-    def crearCliente(self):
-        return f'Cliente creado: {self.nombre}, Documento: {self.noDocumento}'
+    def guardar_cliente(self):
+        nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
+        self.datoC.append(nuevo_cliente)  # Corrige el nombre de la lista
+        self.ventana.destroy()
 
     #mostrar cliente
     def mostrarCliente(self):
