@@ -23,6 +23,8 @@ class MenuPrincipal:
         self.repuestos = []
         self.ordenes = []
         self.pagos = []
+        self.datoRepuesto = []
+        self.datoCliente = []
         
         # Frame principal
         main_frame = ttk.Frame(self.root, padding="20")
@@ -140,13 +142,22 @@ class MenuPrincipal:
         VentanaSoporte(self.root)
 
 
+class Cliente:
+    def __init__(self, nombre, no_documento):
+        self.nombre = nombre
+        self.no_documento = no_documento
+
+    def __repr__(self):
+        return f"{self.nombre} (Documento: {self.no_documento})"
+
 class VentanaCliente:
-    def __init__(self, root):
+    def __init__(self, root, datoC):
+        self.datoC = datoC  # Recibe la lista de clientes
         self.ventana = Toplevel(root)
         self.ventana.title("Registro de Cliente")
         self.ventana.geometry("400x300")
         
-        # Implementa aquí los campos para registrar un cliente
+        # Campos para registrar un cliente
         ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
         self.nombre = StringVar()
         ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
@@ -159,13 +170,14 @@ class VentanaCliente:
         ttk.Button(self.ventana, text="Guardar", command=self.guardar_cliente).grid(row=2, column=0, columnspan=2)
     
     def guardar_cliente(self):
+        # Crear un nuevo cliente con los datos ingresados
         nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
-        self.agregar_cliente(nuevo_cliente)  # Llama al método
-        self.ventana.destroy()
-
+        self.dato.append(nuevo_cliente)  # Agregar el nuevo cliente a la lista
+        self.ventana.destroy()  # Cerrar la ventana después de guardar
 
 class VentanaRepuesto:
-    def __init__(self, root):
+    def __init__(self, root, datoR):
+        self.datoRepuesto = datoR  # Recibe self.dato de MenuPrincipal
         self.ventana = Toplevel(root)
         self.ventana.title("Registro de Repuesto")
         self.ventana.geometry("400x300")
@@ -175,49 +187,58 @@ class VentanaRepuesto:
         self.nombre = StringVar()
         ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
 
-        #Id del producto
+        # Id del producto
         ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
 
-        #cantidad de producto
+        # Cantidad de producto
         ttk.Label(self.ventana, text="Cantidad:").grid(row=2, column=0)
         self.cantidad = StringVar()
         ttk.Entry(self.ventana, textvariable=self.cantidad).grid(row=2, column=1)
 
-        #precio del producto
-        ttk.Label(self.ventana, text="Precio:").grid(row=2, column=0)
+        # Precio del producto
+        ttk.Label(self.ventana, text="Precio:").grid(row=3, column=0)
         self.precio = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=2, column=1)
+        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=3, column=1)
 
-        #activacion de producto
-        ttk.Label(self.ventana, text="Activado:").grid(row=3, column=0)
+        # Activación de producto
+        ttk.Label(self.ventana, text="Activado:").grid(row=4, column=0)
         self.activado = StringVar()
-        ttk.Checkbutton(self.ventana, variable=self.activado).grid(row=3, column=1)
-        
-        #inactivacion de producto
-        ttk.Label(self.ventana, text="Inactivo:").grid(row=4, column=0)
-        self.inactivo = StringVar()
-        ttk.Checkbutton(self.ventana, variable=self.inactivo).grid(row=4, column=1)
+        ttk.Checkbutton(self.ventana, variable=self.activado).grid(row=4, column=1)
 
-        #solo debe estar activo un checkbutton si esta activo uno desmarca el otro
+        # Inactivación de producto
+        ttk.Label(self.ventana, text="Inactivo:").grid(row=5, column=0)
+        self.inactivo = StringVar()
+        ttk.Checkbutton(self.ventana, variable=self.inactivo).grid(row=5, column=1)
+
+        # Solo debe estar activo un Checkbutton, si está activo uno desmarca el otro
         self.activado.set(True)
         self.inactivo.set(False)
         
         # Botón para guardar repuesto
-        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=5, column=0, columnspan=2)
+        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=6, column=0, columnspan=2)
 
     def guardar_repuesto(self):
-        nuevo_repuesto = Repuesto(int(self.id.get()), self.nombre.get(), float(self.precio.get()), float(self.cantidad.get), self.activo.get())
-        self.agregar_repuesto(nuevo_repuesto)  # Llama al método
-        self.ventana.destroy() 
+        # Crear el nuevo repuesto con los datos ingresados
+        nuevo_repuesto = Repuesto(
+            int(self.id.get()),  # Convertir a entero
+            self.nombre.get(),
+            float(self.precio.get()),  # Convertir a float
+            float(self.cantidad.get()),  # Convertir a float
+            self.activado.get() == 'True'  # Convertir a booleano
+        )
+        # Agregar el nuevo repuesto a self.dato
+        self.dato.append(nuevo_repuesto)
+        self.ventana.destroy()  # Cerrar la ventana de repuestos
 
-    def actualizarRepuesto(self):
-        # Se acualiza el repuesto
+    def actualizar_repuesto(self):
+        # Este método puede actualizar los campos con valores predefinidos si deseas
         self.id.set("1")
         self.nombre.set("Repuesto 1")
         self.precio.set("10.0")
-        self.cantidad,set("10")
+        self.cantidad.set("10")
+
 
 class VentanaVendedor:
     def __init__(self, root): #se crea la clase de la ventana del vendedor 
@@ -468,34 +489,19 @@ class VentanaReporte:
         self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
         
         # Agregar un botón para exportar a CSV
-        self.boton_exportar = ttk.Button(self.ventana, text="Exportar a CSV", command=self.exportar_csv)
-        self.boton_exportar.grid(row=2, column=1, pady=10)
+        ttk.Button(self.ventana, text="Exportar a CSV", command=self.exportar_csv).grid(row=2, column=0, pady=10)
         
-        # Configurar el diseño para ajustar los widgets
-        self.ventana.grid_rowconfigure(1, weight=1)
-        self.ventana.grid_columnconfigure(0, weight=1)
-
-    # Función para exportar a CSV
     def exportar_csv(self):
-        try:
-            with open("reporte.csv", mode="w", newline="", encoding="utf-8") as file:
-                writer = csv.writer(file)
-                # Escribir encabezados
-                writer.writerow(["Nombre", "Cantidad", "Precio"])
-                # Escribir filas de datos
-                for item in self.datos:
-                    writer.writerow([item["Nombre"], item["Cantidad"], item["Precio"]])
-            messagebox.showinfo("Exportar CSV", "¡Reporte exportado exitosamente a 'reporte.csv'!")
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo exportar el archivo: {e}")
-
-    # Botón para abrir el reporte
-    def abrir_reporte(self):
-        nueva_ventana = Toplevel(self.ventana)
-        nueva_ventana.title("Reporte de Ventas")
-        ttk.Label(nueva_ventana, text="Nuevo Reporte").pack()
-
-
+        # Archivo CSV donde se exportarán los datos
+        with open('reporte.csv', mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Escribir encabezado
+            writer.writerow(["Nombre", "Cantidad", "Precio"])
+            # Escribir los datos de los productos
+            for item in self.datos:
+                writer.writerow([item["Nombre"], item["Cantidad"], item["Precio"]])
+        
+        messagebox.showinfo("Exportación Exitosa", "El reporte ha sido exportado correctamente a reporte.csv")
     
 #funcion de abrir registros
     def abrir_registro_cliente(self):
