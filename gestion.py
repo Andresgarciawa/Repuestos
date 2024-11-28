@@ -44,7 +44,7 @@ class MenuPrincipal:
             text="Registrar Vendedor",
             image=self.img_vendedor,  # Agrega la imagen
            compound=LEFT,  # Coloca la imagen a la izquierda del texto
-            command=self.abrir_registro_vendedor,
+            #command=self.abrir_registro_vendedor,
             width=30
        ).grid(row=1, column=0, columnspan=2, pady=10)
 
@@ -78,6 +78,26 @@ class MenuPrincipal:
             width=30
         ).grid(row=2, column=2, columnspan=2, pady=10)
 
+        # Boton Soporte con imagen
+        ttk.Button(
+            main_frame,
+            text="Soporte",
+            #image=self.img_soporte,
+            compound=LEFT,
+            #command=self.abrir_soporte,
+            width=30
+            ).grid(row=3, column=0, columnspan=2, pady=10)
+        
+        # Boton de reporte
+        ttk.Button(
+            main_frame,
+            text="Reportes",
+            #image=self.img_reporte,
+            compound=LEFT,
+            #command=self.abrir_reportes,
+            width=30
+            ).grid(row=3, column=2, columnspan=2, pady=10)
+
         # Etiqueta de versión con un estilo más discreto
         ttk.Label(
             main_frame, 
@@ -85,7 +105,7 @@ class MenuPrincipal:
             font=('Helvetica', 8),
             # Color gris
             foreground='gray'  
-        ).grid(row=3, column=0, columnspan=2, pady=10)
+        ).grid(row=4, column=0, columnspan=2, pady=10)
     
     def agregar_cliente(self, cliente):
         self.clientes.append(cliente)
