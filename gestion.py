@@ -127,11 +127,10 @@ class VentanaCliente:
         ttk.Button(self.ventana, text="Guardar", command=self.guardar_cliente).grid(row=2, column=0, columnspan=2)
     
     def guardar_cliente(self):
-        # Aquí debes crear un nuevo objeto Cliente y agregarlo a la lista de clientes
         nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
-        # Asumiendo que tienes acceso al MenuPrincipal para agregar el cliente
-        # Necesitarás pasar una referencia al MenuPrincipal o usar un método de clase
+        self.agregar_cliente(nuevo_cliente)  # Llama al método
         self.ventana.destroy()
+
 
 class VentanaRepuesto:
     def __init__(self, root):
@@ -177,10 +176,9 @@ class VentanaRepuesto:
         ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=5, column=0, columnspan=2)
 
     def guardar_repuesto(self):
-        # Aquí debes crear un nuevo objeto Repuesto y agregarlo a la lista de repuestos
         nuevo_repuesto = Repuesto(int(self.id.get()), self.nombre.get(), float(self.precio.get()), float(self.cantidad.get), self.activo.get())
-        # Necesitarás modificar el código para agregar el repuesto
-        self.ventana.destroy()   
+        self.agregar_repuesto(nuevo_repuesto)  # Llama al método
+        self.ventana.destroy() 
 
     def actualizarRepuesto(self):
         # Se acualiza el repuesto
@@ -388,6 +386,13 @@ def agregar_pago(self):
             texto_ordenes.insert(END, orden.mostrarOrden() + "\n\n")
 
         texto_ordenes.config(state=DISABLED)
+
+#funcion de abrir registros
+    def abrir_registro_cliente(self):
+        VentanaCliente(self.root, self.agregar_cliente)
+
+    def abrir_registro_repuesto(self):
+        VentanaRepuesto(self.root, self.agregar_repuesto)
 
 # Nueva funcionalidad: Generar archivo del inventario
     def generar_archivo_inventario(self):
