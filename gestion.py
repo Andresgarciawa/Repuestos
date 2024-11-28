@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Toplevel, StringVar, Listbox, Text, END, N, W, E, S
 from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
@@ -232,7 +232,6 @@ class VentanaVendedor:
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
 
-
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root
@@ -254,7 +253,7 @@ class AplicacionOrdenes:
 
         # Título
         ttk.Label(self.main_frame, text="Nueva Orden", font=('Helvetica', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=10)
-        
+
         # Sección Orden
         ttk.Label(self.main_frame, text="No. Orden:").grid(row=1, column=0)
         self.no_orden = StringVar()
@@ -266,7 +265,7 @@ class AplicacionOrdenes:
 
         # Sección Cliente
         ttk.Label(self.main_frame, text="Buscar Cliente", font=('Helvetica', 10, 'bold')).grid(row=3, column=0, columnspan=2, pady=10)
-        
+
         ttk.Label(self.main_frame, text="Documento Cliente:").grid(row=4, column=0)
         self.doc_cliente_buscar = StringVar()
         ttk.Entry(self.main_frame, textvariable=self.doc_cliente_buscar).grid(row=4, column=1)
@@ -278,7 +277,7 @@ class AplicacionOrdenes:
 
         # Sección Repuestos
         ttk.Label(self.main_frame, text="Agregar Repuestos", font=('Helvetica', 10, 'bold')).grid(row=6, column=0, columnspan=2, pady=10)
-        
+
         ttk.Label(self.main_frame, text="ID Repuesto:").grid(row=7, column=0)
         self.id_repuesto_buscar = StringVar()
         ttk.Entry(self.main_frame, textvariable=self.id_repuesto_buscar).grid(row=7, column=1)
@@ -289,9 +288,16 @@ class AplicacionOrdenes:
         self.lista_repuestos = Listbox(self.main_frame, height=5, width=50)
         self.lista_repuestos.grid(row=9, column=0, columnspan=3, pady=5)
 
+        # Sección de Pago
+        ttk.Label(self.main_frame, text="Pago", font=('Helvetica', 10, 'bold')).grid(row=10, column=0, columnspan=2, pady=10)
+
+        ttk.Label(self.main_frame, text="Monto Pagado:").grid(row=11, column=0)
+        self.monto_pagado = StringVar()
+        ttk.Entry(self.main_frame, textvariable=self.monto_pagado).grid(row=11, column=1)
+
         # Botones
-        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=10, column=0, pady=10)
-        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=10, column=1)
+        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=12, column=0, pady=10)
+        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=12, column=1)
 
     def buscar_cliente(self):
         documento = self.doc_cliente_buscar.get()
@@ -300,7 +306,7 @@ class AplicacionOrdenes:
             if cliente.noDocumento == documento:
                 cliente_encontrado = cliente
                 break
-        
+
         if cliente_encontrado:
             self.cliente_actual = cliente_encontrado
             self.info_cliente.set(f"Cliente encontrado: {cliente_encontrado.nombre}")
@@ -317,7 +323,7 @@ class AplicacionOrdenes:
                 if repuesto.id == id_repuesto:
                     repuesto_encontrado = repuesto
                     break
-            
+
             if repuesto_encontrado:
                 self.repuestos_seleccionados.append(repuesto_encontrado)
                 self.lista_repuestos.insert(END, f"{repuesto_encontrado.nombre} - ${repuesto_encontrado.precio}")
@@ -331,26 +337,37 @@ class AplicacionOrdenes:
         if not self.cliente_actual:
             messagebox.showerror("Error", "Debe seleccionar un cliente")
             return
-            
+
         if not self.repuestos_seleccionados:
             messagebox.showerror("Error", "Debe agregar al menos un repuesto")
             return
-            
+
         try:
+            total = sum([repuesto.precio for repuesto in self.repuestos_seleccionados])
+            pago = float(self.monto_pagado.get())
+
+            if pago < total:
+                messagebox.showerror("Error", "El monto pagado es insuficiente")
+                return
+
             orden = Orden(
                 int(self.no_orden.get()),
                 int(self.no_mesa.get())
             )
-            
+
             orden.agregarCliente(self.cliente_actual)
             for repuesto in self.repuestos_seleccionados:
                 orden.agregarRepuesto(repuesto)
-            
+
+            # Registrar pago
+            nuevo_pago = Pago(orden.id_orden, pago)
+            self.pagos.append(nuevo_pago)
+
             self.ordenes.append(orden)
             messagebox.showinfo("Éxito", "Orden creada correctamente")
             self.limpiar_campos()
-            
-        except ValueError as e:
+
+        except ValueError:
             messagebox.showerror("Error", "Por favor ingrese valores válidos")
 
     def mostrar_ordenes(self):
