@@ -5,6 +5,9 @@ from repuesto import Repuesto
 from orden import Orden
 from pago import Pago
 import os
+import csv
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 # [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
@@ -229,6 +232,7 @@ class VentanaVendedor:
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
 
+
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root
@@ -285,25 +289,13 @@ class AplicacionOrdenes:
         self.lista_repuestos = Listbox(self.main_frame, height=5, width=50)
         self.lista_repuestos.grid(row=9, column=0, columnspan=3, pady=5)
 
-        #Ingresar pago
-        ttk.Label(self.main_frame, text="Ingresar Pago").grid(row=10, column=0, columnspan=2, pady=10)
-        self.pago = StringVar()
-        ttk.Entry(self.main_frame, textvariable=self.pago).grid(row=10, column=1, columnspan=2, pady=10)
-                                                                
-
         # Botones
-        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=11, column=0, pady=10)
-        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=11, column=1)
-
-        #Botones
-        ttk.Label(self.main_frame, text="Sistema de Gestión de Órdenes", font=('Helvetica', 16, 'bold')).grid(row=0, column=0, columnspan=2, pady=20)
-        ttk.Button(self.main_frame, text="Exportar Inventario",command=self.generar_archivo_inventario,width=30).grid(row=4, column=0, columnspan=2, pady=10)
+        ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=10, column=0, pady=10)
+        ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=10, column=1)
 
     def buscar_cliente(self):
         documento = self.doc_cliente_buscar.get()
         cliente_encontrado = None
-        
-        # Buscar en la lista de clientes
         for cliente in self.clientes:
             if cliente.noDocumento == documento:
                 cliente_encontrado = cliente
@@ -321,8 +313,6 @@ class AplicacionOrdenes:
         try:
             id_repuesto = int(self.id_repuesto_buscar.get())
             repuesto_encontrado = None
-            
-            # Buscar en la lista de repuestos
             for repuesto in self.repuestos:
                 if repuesto.id == id_repuesto:
                     repuesto_encontrado = repuesto
@@ -337,26 +327,6 @@ class AplicacionOrdenes:
         except ValueError:
             messagebox.showerror("Error", "ID de repuesto inválido")
 
-def agregar_pago(self):
-    try:
-        # Usar el método correcto para obtener el valor del pago
-        monto = float(self.pago.get())
-        
-        # Crear un objeto Pago con la fecha actual
-        from datetime import datetime
-        nuevo_pago = Pago(datetime.now(), monto, "Efectivo")  # Puedes cambiar el tipo de pago según sea necesario
-        
-        # Agregar el pago a la lista de pagos
-        self.pagos.append(nuevo_pago)
-        
-        # Mostrar mensaje de confirmación
-        messagebox.showinfo("Pago", f"Pago de ${monto} registrado correctamente")
-        
-        # Limpiar el campo de pago
-        self.pago.set("")
-    except ValueError:
-        messagebox.showerror("Error", "Monto de pago inválido")
-
     def crear_orden(self):
         if not self.cliente_actual:
             messagebox.showerror("Error", "Debe seleccionar un cliente")
@@ -367,41 +337,31 @@ def agregar_pago(self):
             return
             
         try:
-            # Crear la orden
             orden = Orden(
                 int(self.no_orden.get()),
                 int(self.no_mesa.get())
             )
             
-            # Agregar cliente y repuestos
             orden.agregarCliente(self.cliente_actual)
             for repuesto in self.repuestos_seleccionados:
                 orden.agregarRepuesto(repuesto)
             
             self.ordenes.append(orden)
             messagebox.showinfo("Éxito", "Orden creada correctamente")
-            
-            # Limpiar campos
             self.limpiar_campos()
             
         except ValueError as e:
             messagebox.showerror("Error", "Por favor ingrese valores válidos")
-
-    def limpiar_campos(self):
-        self.no_orden.set("")
-        self.no_mesa.set("")
-        self.doc_cliente_buscar.set("")
-        self.id_repuesto_buscar.set("")
-        self.info_cliente.set("")
-        self.lista_repuestos.delete(0, END)
-        self.cliente_actual = None
-        self.repuestos_seleccionados = []
 
     def mostrar_ordenes(self):
         if not self.ordenes:
             messagebox.showinfo("Info", "No hay órdenes registradas")
             return
 
+        # Generar PDF
+        self.generar_pdf_ordenes()
+
+        # Mostrar ventana con órdenes
         ventana_ordenes = Toplevel(self.root)
         ventana_ordenes.title("Órdenes Registradas")
         ventana_ordenes.geometry("600x400")
@@ -413,6 +373,24 @@ def agregar_pago(self):
             texto_ordenes.insert(END, orden.mostrarOrden() + "\n\n")
 
         texto_ordenes.config(state=DISABLED)
+
+    def generar_pdf_ordenes(self):
+        archivo_pdf = "ordenes.pdf"
+        c = canvas.Canvas(archivo_pdf, pagesize=letter)
+
+        # Título
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(200, 750, "Órdenes Registradas")
+
+        y_position = 720
+        for orden in self.ordenes:
+            c.setFont("Helvetica", 12)
+            c.drawString(50, y_position, orden.mostrarOrden())
+            y_position -= 20
+
+        c.save()
+        messagebox.showinfo("PDF Generado", f"El archivo PDF se generó correctamente: {os.path.abspath(archivo_pdf)}")
+
 
 # Clase Ventana Soporte
 class VentanaSoporte:
@@ -444,7 +422,61 @@ class VentanaReporte:
         self.ventana.title("Reporte")
         self.ventana.geometry("600x400")
         
-        ttk.Label(self.ventana, text="reporte:").grid(row=0, column=0)
+        # Etiqueta
+        ttk.Label(self.ventana, text="Reporte:").grid(row=0, column=0, padx=10, pady=10)
+        
+        # Crear el Treeview para mostrar el reporte
+        self.tree = ttk.Treeview(self.ventana, columns=("Nombre", "Cantidad", "Precio"), show="headings")
+        self.tree.heading("Nombre", text="Nombre")
+        self.tree.heading("Cantidad", text="Cantidad")
+        self.tree.heading("Precio", text="Precio")
+        
+        # Ajustar el tamaño de las columnas
+        self.tree.column("Nombre", width=200, anchor="center")
+        self.tree.column("Cantidad", width=100, anchor="center")
+        self.tree.column("Precio", width=100, anchor="center")
+        
+        # Agregar datos al Treeview
+        self.datos = [
+            {"Nombre": "Producto A", "Cantidad": 10, "Precio": 15.5},
+            {"Nombre": "Producto B", "Cantidad": 5, "Precio": 7.8},
+            {"Nombre": "Producto C", "Cantidad": 8, "Precio": 12.0},
+        ]
+        for item in self.datos:
+            self.tree.insert("", "end", values=(item["Nombre"], item["Cantidad"], item["Precio"]))
+        
+        # Colocar el Treeview en la ventana
+        self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        
+        # Agregar un botón para exportar a CSV
+        self.boton_exportar = ttk.Button(self.ventana, text="Exportar a CSV", command=self.exportar_csv)
+        self.boton_exportar.grid(row=2, column=1, pady=10)
+        
+        # Configurar el diseño para ajustar los widgets
+        self.ventana.grid_rowconfigure(1, weight=1)
+        self.ventana.grid_columnconfigure(0, weight=1)
+
+    # Función para exportar a CSV
+    def exportar_csv(self):
+        try:
+            with open("reporte.csv", mode="w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                # Escribir encabezados
+                writer.writerow(["Nombre", "Cantidad", "Precio"])
+                # Escribir filas de datos
+                for item in self.datos:
+                    writer.writerow([item["Nombre"], item["Cantidad"], item["Precio"]])
+            messagebox.showinfo("Exportar CSV", "¡Reporte exportado exitosamente a 'reporte.csv'!")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo exportar el archivo: {e}")
+
+    # Botón para abrir el reporte
+    def abrir_reporte(self):
+        nueva_ventana = Toplevel(self.ventana)
+        nueva_ventana.title("Reporte de Ventas")
+        ttk.Label(nueva_ventana, text="Nuevo Reporte").pack()
+
+
     
 #funcion de abrir registros
     def abrir_registro_cliente(self):
