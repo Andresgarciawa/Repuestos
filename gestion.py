@@ -40,6 +40,8 @@ class MenuPrincipal:
         self.img_cliente = PhotoImage(file="iconos/cliente.png") 
         self.img_repuesto = PhotoImage(file="iconos/repuesto.png")
         self.img_orden = PhotoImage(file="iconos/orden.png")
+        self.img_soporte = PhotoImage(file="iconos/soporte.png")
+        self.img_reporte = PhotoImage(file="iconos/reporte.png")
         
         # Botón Registrar vendedor con imagen
         ttk.Button(
@@ -81,25 +83,25 @@ class MenuPrincipal:
             width=30
         ).grid(row=2, column=2, columnspan=2, pady=10)
 
-        # Boton Soporte con imagen
+        # Botón Soporte
         ttk.Button(
             main_frame,
             text="Soporte",
-            #image=self.img_soporte,
+            image=self.img_soporte,
             compound=LEFT,
             command=self.abrir_soporte,
             width=30
-            ).grid(row=3, column=0, columnspan=2, pady=10)
-        
-        # Boton de reporte
+        ).grid(row=3, column=0, columnspan=2, pady=10)
+
+        # Botón Reportes
         ttk.Button(
             main_frame,
             text="Reportes",
-            #image=self.img_orden,
+            image=self.img_reporte,
             compound=LEFT,
             command=self.abrir_reportes,
             width=30
-            ).grid(row=3, column=2, columnspan=2, pady=10)
+        ).grid(row=3, column=2, columnspan=2, pady=10)
 
         # Etiqueta de versión con un estilo más discreto
         ttk.Label(
