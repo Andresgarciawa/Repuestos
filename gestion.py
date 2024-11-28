@@ -540,11 +540,8 @@ class VentanaReporte:
                 archivo.write("No hay órdenes registradas.\n")
                 messagebox.showinfo("Éxito", f"Inventario exportado en: {ruta_archivo}")
 
-
-def main():
+if __name__ == "__main__":
+    # Crear la ventana principal
     root = Tk()
     app = MenuPrincipal(root)
     root.mainloop()
-
-if __name__ == "__main__":
-    main()
