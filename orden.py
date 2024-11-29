@@ -1,4 +1,3 @@
-from cliente import Cliente
 class Orden:
     def __init__(self, noOrden, noMesa, pago):
         self.noOrden = noOrden
