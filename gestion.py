@@ -3,7 +3,6 @@ from tkinter import ttk, messagebox, Toplevel, StringVar, Listbox, Text, END, N,
 from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
-from pago import Pago
 import os
 import csv
 from reportlab.lib.pagesizes import letter
@@ -256,6 +255,7 @@ class VentanaVendedor:
         self.nombre.set("")
         self.id.set("")
 
+
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
         self.root = root
@@ -328,7 +328,7 @@ class AplicacionOrdenes:
         cliente_encontrado = None
 
         for cliente in self.clientes:
-            if cliente.no_documento == documento:  # Accede al atributo correcto
+            if cliente.no_documento == documento:
                 cliente_encontrado = cliente
                 break
 
@@ -378,7 +378,7 @@ class AplicacionOrdenes:
             return
 
         # Verificar que el número de orden no esté duplicado
-        if any(orden.id_orden == no_orden for orden in self.ordenes):
+        if any(orden.noOrden == no_orden for orden in self.ordenes):
             messagebox.showerror("Error", "El número de orden ya existe")
             return
 
@@ -392,18 +392,19 @@ class AplicacionOrdenes:
                 return
 
             # Crear la orden
-            orden = Orden(no_orden, no_mesa)
+            orden = Orden(no_orden, no_mesa, pago)
             orden.agregarCliente(self.cliente_actual)
 
             for repuesto in self.repuestos_seleccionados:
                 orden.agregarRepuesto(repuesto)
 
             # Registrar el pago
-            nuevo_pago = Pago(orden.id_orden, pago)
-            self.pagos.append(nuevo_pago)
-
-            # Guardar la orden en la lista
             self.ordenes.append(orden)
+            self.cliente_actual = None
+            self.repuestos_seleccionados = []
+            self.no_orden.set("")
+            self.no_mesa.set("")
+            self.monto_pagado.set("")
 
             # Mostrar mensaje de éxito y limpiar los campos
             messagebox.showinfo("Éxito", "Orden creada correctamente")
@@ -413,42 +414,32 @@ class AplicacionOrdenes:
             messagebox.showerror("Error", "Por favor, ingrese valores válidos para el pago")
 
     def mostrar_ordenes(self):
+        """Muestra una lista de órdenes creadas en una ventana secundaria."""
         if not self.ordenes:
-            messagebox.showinfo("Info", "No hay órdenes registradas")
+            messagebox.showinfo("Sin Órdenes", "No hay órdenes registradas")
             return
 
-        # Generar PDF
-        self.generar_pdf_ordenes()
-
-        # Mostrar ventana con órdenes
+        # Crear una ventana secundaria
         ventana_ordenes = Toplevel(self.root)
-        ventana_ordenes.title("Órdenes Registradas")
+        ventana_ordenes.title("Lista de Órdenes")
         ventana_ordenes.geometry("600x400")
 
-        texto_ordenes = Text(ventana_ordenes, height=20, width=70)
-        texto_ordenes.pack(padx=10, pady=10)
-
-        for orden in self.ordenes:
-            texto_ordenes.insert(END, orden.mostrarOrden() + "\n\n")
-
-        texto_ordenes.config(state=DISABLED)
-
-    def generar_pdf_ordenes(self):
-        archivo_pdf = "ordenes.pdf"
-        c = canvas.Canvas(archivo_pdf, pagesize=letter)
-
         # Título
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(200, 750, "Órdenes Registradas")
+        ttk.Label(ventana_ordenes, text="Órdenes Registradas", font=('Helvetica', 12, 'bold')).pack(pady=10)
 
-        y_position = 720
+        # Crear una lista para mostrar las órdenes
+        lista_ordenes = Listbox(ventana_ordenes, width=80, height=20)
+        lista_ordenes.pack(pady=10)
+
+        # Insertar datos de cada orden en la lista
         for orden in self.ordenes:
-            c.setFont("Helvetica", 12)
-            c.drawString(50, y_position, orden.mostrarOrden())
-            y_position -= 20
+            lista_ordenes.insert(END, f"No. Orden: {orden.noOrden} | Mesa: {orden.noMesa} | Pago: ${orden.pago:.2f}")
+            lista_ordenes.insert(END, f"Cliente: {orden.cliente.nombre} ({orden.cliente.no_documento})")
+            repuestos = ", ".join(f"{r.nombre} (${r.precio:.2f})" for r in orden.repuestos)
+            lista_ordenes.insert(END, f"Repuestos: {repuestos}")
+            lista_ordenes.insert(END, "-" * 60)
 
-        c.save()
-        messagebox.showinfo("PDF Generado", f"El archivo PDF se generó correctamente: {os.path.abspath(archivo_pdf)}")
+
 
     def limpiar_campos(self):
         # Limpiar cliente
