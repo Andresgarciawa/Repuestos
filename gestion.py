@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, Toplevel, StringVar, Listbox, Text, END, N,
 from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
+from vendedor import Vendedor
 import os
 import csv
 from reportlab.lib.pagesizes import letter
@@ -47,8 +48,8 @@ class MenuPrincipal:
             main_frame,
             text="Registrar Vendedor",
             image=self.img_vendedor,  # Agrega la imagen
-           compound=LEFT,  # Coloca la imagen a la izquierda del texto
-            #command=self.abrir_registro_vendedor,
+            compound=LEFT,  # Coloca la imagen a la izquierda del texto
+            command=self.abrir_registro_vendedor,  # Usa este método
             width=30
        ).grid(row=1, column=0, columnspan=2, pady=10)
 
@@ -113,6 +114,13 @@ class MenuPrincipal:
     
     def agregar_cliente(self, cliente):
         self.clientes.append(cliente)
+
+    # Método para abrir registro de vendedor
+    def abrir_registro_vendedor(self):
+        VentanaVendedor(self.root, self.vendedor)
+    
+    def agregar_vendedor(self, vendedor):
+        self.vendedor.append(vendedor)
     
     def agregar_repuesto(self, repuesto):
         self.repuestos.append(repuesto)
@@ -236,24 +244,65 @@ class VentanaRepuesto:
         self.cantidad.set("")
 
 class VentanaVendedor:
-    def __init__(self, root): #se crea la clase de la ventana del vendedor 
+    def __init__(self, root, vendedores):
+        # Se crea la ventana emergente de "Registro de Vendedor"
         self.ventana = Toplevel(root)
-        self.ventana.title("Registro de Repuesto")
+        self.ventana.title("Registro de Vendedor")
         self.ventana.geometry("400x300")
         
-        # Implementa aquí los campos para registrar al vendedor
+        # Almacenar los vendedores
+        self.vendedores = vendedores
+        
+        # Campos para registrar al vendedor
         ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
         self.nombre = StringVar()
         ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
-        # se implementan los campos para registrar el ID del vendendor
+        
         ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
         self.id = StringVar()
         ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
-
+        
+        # Botón para registrar al vendedor
+        ttk.Button(
+            self.ventana, 
+            text="Registrar Vendedor", 
+            command=self.registrar_vendedor
+        ).grid(row=2, column=0, columnspan=2, pady=10)
+    
+    def registrar_vendedor(self):
+        # Obtener los valores de los campos
+        nombre = self.nombre.get().strip()
+        id_vendedor = self.id.get().strip()
+        
+        # Validar que los campos no estén vacíos
+        if not nombre or not id_vendedor:
+            messagebox.showerror("Error", "Debe completar todos los campos")
+            return
+        
+        # Verificar si el ID ya existe
+        for vendedor in self.vendedores:
+            if vendedor['id'] == id_vendedor:
+                messagebox.showerror("Error", "El ID de vendedor ya existe")
+                return
+        
+        # Crear un nuevo vendedor y agregarlo a la lista de vendedores
+        nuevo_vendedor = {'nombre': nombre, 'id': id_vendedor}
+        self.vendedores.append(nuevo_vendedor)
+        
+        # Limpiar los campos
+        self.limpiar_campos()
+        
+        # Confirmación de registro
+        messagebox.showinfo("Éxito", "Vendedor registrado exitosamente")
+        
+        # Opcional: Cerrar la ventana después de registrar
+        self.ventana.destroy()
+    
     def limpiar_campos(self):
-        # Limpiar Vendedor
+        # Limpiar los campos de la ventana
         self.nombre.set("")
         self.id.set("")
+
 
 
 class AplicacionOrdenes:
@@ -536,6 +585,9 @@ class VentanaReporte:
 
     def abrir_registro_repuesto(self):
         VentanaRepuesto(self.root, self.agregar_repuesto)
+    
+    def abrir_registro_vendedor(self):
+        VentanaVendedor(self.root, self.abrir_registro_vendedor)
 
 # Nueva funcionalidad: Generar archivo del inventario
     def generar_archivo_inventario(self):
