@@ -30,3 +30,4 @@ class Repuesto:
         self.cantidad = cantidad
         self.precio = precio
         return f'Repuesto modificado: {self.nombre}, ID: {self.id}, Cantidad: {self.cantidad}, Precio: {self.precio}'
+    

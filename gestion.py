@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk, messagebox, Toplevel, StringVar, Listbox, Text, END, N, W, E, S
+from tkinter import ttk, messagebox, Toplevel, StringVar, Listbox, simpledialog, END, N, W, E, S
 from cliente import Cliente
 from repuesto import Repuesto
 from orden import Orden
@@ -7,7 +7,6 @@ from vendedor import Vendedor
 import os
 import csv
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 
 # [Las clases VentanaCliente y VentanaRepuesto se mantienen igual]
 
@@ -19,7 +18,8 @@ class MenuPrincipal:
         
         # Listas para almacenar clientes y repuestos
         self.clientes = []  # Se pasa como datoC en VentanaCliente
-        self.repuestos = []  # Se pasa como datoR en VentanaRepuesto
+        self.repuestos = [    Repuesto(1, "Repuesto A", 10, 100),
+                                Repuesto(2, "Repuesto B", 15, 200),]  # Se pasa como datoR en VentanaRepuesto
         self.vendedor = []
         self.ordenes = []
         self.pagos = []
@@ -426,9 +426,6 @@ class VentanaRepuesto:
         self.precio_var.set("")
         self.cantidad_var.set("")
 
-from tkinter import *
-from tkinter import ttk, messagebox
-
 class VentanaVendedor:
     def __init__(self, root, vendedores):
         # Se crea la ventana emergente
@@ -629,6 +626,8 @@ class AplicacionOrdenes:
         # Botones
         ttk.Button(self.main_frame, text="Crear Orden", command=self.crear_orden).grid(row=12, column=0, pady=10)
         ttk.Button(self.main_frame, text="Mostrar Órdenes", command=self.mostrar_ordenes).grid(row=12, column=1)
+        ttk.Button(self.main_frame, text="Editar Orden", command=self.editar_orden).grid(row=13, column=0, pady=10)
+        ttk.Button(self.main_frame, text="Eliminar Orden", command=self.eliminar_orden).grid(row=13, column=1)
 
     def buscar_cliente(self):
         documento = self.doc_cliente_buscar.get()
@@ -649,9 +648,24 @@ class AplicacionOrdenes:
 
     def agregar_repuesto(self):
         try:
-            id_repuesto = int(self.id_repuesto_buscar.get())
+            id_repuesto = self.id_repuesto_buscar.get().strip()
+            if not id_repuesto.isdigit():
+                messagebox.showerror("Error", "Por favor ingrese un ID de repuesto válido (número entero).")
+                return
+            
+            id_repuesto = int(id_repuesto)
+            print(f"Buscando repuesto con ID: {id_repuesto}")  # Depuración
+
+            # Verificar si la lista de repuestos está vacía
+            if not self.repuestos:
+                print("Lista de repuestos está vacía")
+                messagebox.showerror("Error", "No hay repuestos disponibles.")
+                return
+
+            # Buscar el repuesto
             repuesto_encontrado = None
             for repuesto in self.repuestos:
+                print(f"Comparando repuesto ID: {repuesto.id} con ID ingresado: {id_repuesto}")  # Depuración
                 if repuesto.id == id_repuesto:
                     repuesto_encontrado = repuesto
                     break
@@ -662,8 +676,10 @@ class AplicacionOrdenes:
                 self.id_repuesto_buscar.set("")
             else:
                 messagebox.showerror("Error", "Repuesto no encontrado")
+                print(f"Repuesto con ID {id_repuesto} no encontrado.")  # Depuración
+
         except ValueError:
-            messagebox.showerror("Error", "ID de repuesto inválido")
+            messagebox.showerror("Error", "ID de repuesto inválido. Por favor ingrese un número válido.")
 
     def crear_orden(self):
         # Validar que el cliente esté seleccionado
@@ -763,6 +779,68 @@ class AplicacionOrdenes:
         self.monto_pagado.set("")
         self.id_repuesto_buscar.set("")
         self.doc_cliente_buscar.set("")
+    
+    def buscar_orden(self, no_orden):
+        """Busca una orden por su número."""
+        for orden in self.ordenes:
+            if orden.noOrden == no_orden:
+                return orden
+        return None
+
+    def editar_orden(self):
+        """Edita una orden seleccionada."""
+        try:
+            no_orden = int(simpledialog.askstring("Editar Orden", "Ingrese el número de la orden a editar"))
+            orden = self.buscar_orden(no_orden)
+
+            if not orden:
+                messagebox.showerror("Error", "Orden no encontrada")
+                return
+
+            # Ventana para editar la orden
+            ventana_editar = Toplevel(self.root)
+            ventana_editar.title(f"Editar Orden No. {orden.noOrden}")
+            ventana_editar.geometry("400x300")
+
+            ttk.Label(ventana_editar, text="No. Mesa:").grid(row=0, column=0)
+            no_mesa = StringVar(value=str(orden.noMesa))
+            ttk.Entry(ventana_editar, textvariable=no_mesa).grid(row=0, column=1)
+
+            ttk.Label(ventana_editar, text="Monto Pagado:").grid(row=1, column=0)
+            monto_pagado = StringVar(value=str(orden.pago))
+            ttk.Entry(ventana_editar, textvariable=monto_pagado).grid(row=1, column=1)
+
+            def guardar_cambios():
+                try:
+                    orden.noMesa = int(no_mesa.get())
+                    orden.pago = float(monto_pagado.get())
+                    messagebox.showinfo("Éxito", "Orden actualizada correctamente")
+                    ventana_editar.destroy()
+                except ValueError:
+                    messagebox.showerror("Error", "Datos inválidos")
+
+            ttk.Button(ventana_editar, text="Guardar Cambios", command=guardar_cambios).grid(row=2, column=0, columnspan=2, pady=10)
+
+        except ValueError:
+            messagebox.showerror("Error", "Número de orden inválido")
+
+    def eliminar_orden(self):
+        """Elimina una orden por su número."""
+        try:
+            no_orden = int(simpledialog.askstring("Eliminar Orden", "Ingrese el número de la orden a eliminar"))
+            orden = self.buscar_orden(no_orden)
+
+            if not orden:
+                messagebox.showerror("Error", "Orden no encontrada")
+                return
+
+            # Confirmación antes de eliminar
+            confirmacion = messagebox.askyesno("Confirmar", f"¿Está seguro de eliminar la Orden No. {no_orden}?")
+            if confirmacion:
+                self.ordenes.remove(orden)
+                messagebox.showinfo("Éxito", "Orden eliminada correctamente")
+        except ValueError:
+            messagebox.showerror("Error", "Número de orden inválido")
 
 
 
