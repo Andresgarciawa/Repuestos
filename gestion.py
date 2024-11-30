@@ -159,151 +159,409 @@ class VentanaCliente:
     def __init__(self, root, datoC):
         self.datoC = datoC  # Recibe la lista de clientes
         self.ventana = Toplevel(root)
-        self.ventana.title("Registro de Cliente")
-        self.ventana.geometry("400x300")
+        self.ventana.title("Gestión de Clientes")
+        self.ventana.geometry("600x400")
+
+        # Frame superior para los campos de entrada
+        frame_campos = ttk.Frame(self.ventana, padding="10")
+        frame_campos.pack(side=TOP, fill=X)
         
-        # Campos para registrar un cliente
-        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
-        self.nombre = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
+        ttk.Label(frame_campos, text="Nombre:").grid(row=0, column=0, padx=5, pady=5)
+        self.nombre_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.nombre_var).grid(row=0, column=1, padx=5, pady=5)
         
-        ttk.Label(self.ventana, text="No. Documento:").grid(row=1, column=0)
-        self.noDocumento = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.noDocumento).grid(row=1, column=1)
+        ttk.Label(frame_campos, text="No. Documento:").grid(row=0, column=2, padx=5, pady=5)
+        self.no_documento_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.no_documento_var).grid(row=0, column=3, padx=5, pady=5)
         
-        # Botón para guardar cliente
-        ttk.Button(self.ventana, text="Guardar", command=self.guardar_cliente).grid(row=2, column=0, columnspan=2)
-    
+        # Botones para acciones
+        ttk.Button(frame_campos, text="Registrar", command=self.guardar_cliente).grid(row=1, column=0, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Editar", command=self.editar_cliente).grid(row=1, column=1, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Eliminar", command=self.eliminar_cliente).grid(row=1, column=2, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Limpiar", command=self.limpiar_campos).grid(row=1, column=3, padx=5, pady=10)
+        
+        # Tabla para visualizar los clientes
+        self.tabla = ttk.Treeview(self.ventana, columns=("Nombre", "No. Documento"), show="headings")
+        self.tabla.heading("Nombre", text="Nombre")
+        self.tabla.heading("No. Documento", text="No. Documento")
+        self.tabla.pack(fill=BOTH, expand=True)
+
+        # Evento de selección en la tabla
+        self.tabla.bind("<<TreeviewSelect>>", self.seleccionar_cliente)
+
+        # Variable para el cliente seleccionado
+        self.cliente_seleccionado = None
+
+        # Cargar los clientes iniciales en la tabla
+        self.actualizar_tabla()
+
     def guardar_cliente(self):
-        # Crear un nuevo cliente con los datos ingresados
-        nuevo_cliente = Cliente(self.nombre.get(), self.noDocumento.get())
-        self.datoC.append(nuevo_cliente)  # Agregar el nuevo cliente a la lista
-        messagebox.showinfo("Éxito", "Cliente registrado exitosamente")
-        self.ventana.destroy()  # Cerrar la ventana después de guardar
+        try:
+            nombre = self.nombre_var.get()
+            no_documento = self.no_documento_var.get()
+
+            # Validar campos
+            if not nombre or not no_documento:
+                raise ValueError("El nombre y el número de documento son obligatorios")
+
+            # Verificar que el número de documento no esté duplicado
+            if any(cliente.no_documento == no_documento for cliente in self.datoC):
+                raise ValueError("El número de documento ya existe")
+
+            # Crear y agregar el nuevo cliente
+            nuevo_cliente = Cliente(nombre, no_documento)
+            self.datoC.append(nuevo_cliente)
+
+            # Actualizar la tabla y limpiar los campos
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Cliente registrado exitosamente")
+        except ValueError as e:
+            messagebox.showerror("Error", f"Datos inválidos: {e}")
+
+    def editar_cliente(self):
+        if not self.cliente_seleccionado:
+            messagebox.showwarning("Advertencia", "Seleccione un cliente para editar")
+            return
+
+        try:
+            nombre = self.nombre_var.get()
+            no_documento = self.no_documento_var.get()
+
+            # Validar campos
+            if not nombre or not no_documento:
+                raise ValueError("El nombre y el número de documento son obligatorios")
+
+            # Verificar que el número de documento no se duplique al editar
+            if any(cliente.no_documento == no_documento and cliente != self.cliente_seleccionado for cliente in self.datoC):
+                raise ValueError("El número de documento ya existe")
+
+            # Actualizar los datos del cliente seleccionado
+            self.cliente_seleccionado.nombre = nombre
+            self.cliente_seleccionado.no_documento = no_documento
+
+            # Actualizar la tabla y limpiar los campos
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Cliente editado exitosamente")
+        except ValueError as e:
+            messagebox.showerror("Error", f"Datos inválidos: {e}")
+
+    def eliminar_cliente(self):
+        if not self.cliente_seleccionado:
+            messagebox.showwarning("Advertencia", "Seleccione un cliente para eliminar")
+            return
+
+        # Confirmar eliminación
+        if messagebox.askyesno("Confirmar", "¿Está seguro de eliminar este cliente?"):
+            self.datoC.remove(self.cliente_seleccionado)
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Cliente eliminado exitosamente")
+
+    def actualizar_tabla(self):
+        # Limpiar la tabla
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+
+        # Agregar los clientes a la tabla
+        for cliente in self.datoC:
+            self.tabla.insert("", END, values=(cliente.nombre, cliente.no_documento))
+
+    def seleccionar_cliente(self, event):
+        try:
+            item = self.tabla.selection()[0]
+            values = self.tabla.item(item, "values")
+            self.cliente_seleccionado = next(c for c in self.datoC if c.no_documento == values[1])
+
+            # Llenar los campos con los valores seleccionados
+            self.nombre_var.set(self.cliente_seleccionado.nombre)
+            self.no_documento_var.set(self.cliente_seleccionado.no_documento)
+        except Exception:
+            self.cliente_seleccionado = None
 
     def limpiar_campos(self):
-        # Limpiar cliente
-        self.nombre.set("")
-        self.noDocumento.set("")
+        self.nombre_var.set("")
+        self.no_documento_var.set("")
+
 
 class VentanaRepuesto:
     def __init__(self, root, datoR):
         self.datoRepuesto = datoR  # Recibe la lista de repuestos
         self.ventana = Toplevel(root)
-        self.ventana.title("Registro de Repuesto")
-        self.ventana.geometry("400x300")
+        self.ventana.title("Gestión de Repuestos")
+        self.ventana.geometry("600x400")
         
-        # Campos para registrar un repuesto
-        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
-        self.nombre = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
-
-        ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
-        self.id = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
-
-        ttk.Label(self.ventana, text="Precio:").grid(row=2, column=0)
-        self.precio = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.precio).grid(row=2, column=1)
-
-        ttk.Label(self.ventana, text="Cantidad:").grid(row=3, column=0)
-        self.cantidad = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.cantidad).grid(row=3, column=1)
+        # Frame superior para los campos de entrada
+        frame_campos = ttk.Frame(self.ventana, padding="10")
+        frame_campos.pack(side=TOP, fill=X)
         
-        # Botón para guardar repuesto
-        ttk.Button(self.ventana, text="Guardar", command=self.guardar_repuesto).grid(row=4, column=0, columnspan=2)
+        ttk.Label(frame_campos, text="ID:").grid(row=0, column=0, padx=5, pady=5)
+        self.id_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.id_var).grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(frame_campos, text="Nombre:").grid(row=0, column=2, padx=5, pady=5)
+        self.nombre_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.nombre_var).grid(row=0, column=3, padx=5, pady=5)
+
+        ttk.Label(frame_campos, text="Precio:").grid(row=1, column=0, padx=5, pady=5)
+        self.precio_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.precio_var).grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Label(frame_campos, text="Cantidad:").grid(row=1, column=2, padx=5, pady=5)
+        self.cantidad_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.cantidad_var).grid(row=1, column=3, padx=5, pady=5)
+
+        # Botones para acciones
+        ttk.Button(frame_campos, text="Registrar", command=self.guardar_repuesto).grid(row=2, column=0, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Editar", command=self.editar_repuesto).grid(row=2, column=1, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Eliminar", command=self.eliminar_repuesto).grid(row=2, column=2, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Limpiar", command=self.limpiar_campos).grid(row=2, column=3, padx=5, pady=10)
+
+        # Tabla para visualizar los repuestos
+        self.tabla = ttk.Treeview(self.ventana, columns=("ID", "Nombre", "Precio", "Cantidad"), show="headings")
+        self.tabla.heading("ID", text="ID")
+        self.tabla.heading("Nombre", text="Nombre")
+        self.tabla.heading("Precio", text="Precio")
+        self.tabla.heading("Cantidad", text="Cantidad")
+        self.tabla.pack(fill=BOTH, expand=True)
+
+        # Evento de selección en la tabla
+        self.tabla.bind("<<TreeviewSelect>>", self.seleccionar_repuesto)
+
+        # Variable para el repuesto seleccionado
+        self.repuesto_seleccionado = None
+
+        # Cargar los repuestos iniciales en la tabla
+        self.actualizar_tabla()
 
     def guardar_repuesto(self):
         try:
-            # Crear el nuevo repuesto con los datos ingresados
-            nuevo_repuesto = Repuesto(
-                int(self.id.get()),
-                self.nombre.get(),
-                float(self.precio.get()),
-                int(self.cantidad.get())
-            )
-            # Agregar el nuevo repuesto a la lista
+            id_repuesto = self.id_var.get()
+            nombre = self.nombre_var.get()
+            precio = float(self.precio_var.get())
+            cantidad = int(self.cantidad_var.get())
+
+            # Validar campos
+            if not id_repuesto or not nombre:
+                raise ValueError("ID y Nombre son obligatorios")
+
+            # Verificar que el ID no esté duplicado
+            if any(r.id == id_repuesto for r in self.datoRepuesto):
+                raise ValueError("El ID del repuesto ya existe")
+
+            # Crear y agregar el nuevo repuesto
+            nuevo_repuesto = Repuesto(id_repuesto, nombre, precio, cantidad)
             self.datoRepuesto.append(nuevo_repuesto)
+
+            # Actualizar la tabla y limpiar los campos
+            self.actualizar_tabla()
+            self.limpiar_campos()
             messagebox.showinfo("Éxito", "Repuesto registrado exitosamente")
-            self.ventana.destroy()  # Cerrar la ventana de repuestos
         except ValueError as e:
             messagebox.showerror("Error", f"Datos inválidos: {e}")
 
-    def actualizar_repuesto(self):
-        # Este método puede actualizar los campos con valores predefinidos si deseas
-        self.id.set("1")
-        self.nombre.set("Repuesto 1")
-        self.precio.set("10.0")
-        self.cantidad.set("10")
+    def editar_repuesto(self):
+        if not self.repuesto_seleccionado:
+            messagebox.showwarning("Advertencia", "Seleccione un repuesto para editar")
+            return
+
+        try:
+            id_repuesto = self.id_var.get()
+            nombre = self.nombre_var.get()
+            precio = float(self.precio_var.get())
+            cantidad = int(self.cantidad_var.get())
+
+            # Actualizar los datos del repuesto seleccionado
+            self.repuesto_seleccionado.id = id_repuesto
+            self.repuesto_seleccionado.nombre = nombre
+            self.repuesto_seleccionado.precio = precio
+            self.repuesto_seleccionado.cantidad = cantidad
+
+            # Actualizar la tabla y limpiar los campos
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Repuesto editado exitosamente")
+        except ValueError as e:
+            messagebox.showerror("Error", f"Datos inválidos: {e}")
+
+    def eliminar_repuesto(self):
+        if not self.repuesto_seleccionado:
+            messagebox.showwarning("Advertencia", "Seleccione un repuesto para eliminar")
+            return
+
+        # Confirmar eliminación
+        if messagebox.askyesno("Confirmar", "¿Está seguro de eliminar este repuesto?"):
+            self.datoRepuesto.remove(self.repuesto_seleccionado)
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Repuesto eliminado exitosamente")
+
+    def actualizar_tabla(self):
+        # Limpiar la tabla
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+
+        # Agregar los repuestos a la tabla
+        for repuesto in self.datoRepuesto:
+            self.tabla.insert("", END, values=(repuesto.id, repuesto.nombre, repuesto.precio, repuesto.cantidad))
+
+    def seleccionar_repuesto(self, event):
+        try:
+            item = self.tabla.selection()[0]
+            values = self.tabla.item(item, "values")
+            self.repuesto_seleccionado = next(r for r in self.datoRepuesto if r.id == values[0])
+
+            # Llenar los campos con los valores seleccionados
+            self.id_var.set(self.repuesto_seleccionado.id)
+            self.nombre_var.set(self.repuesto_seleccionado.nombre)
+            self.precio_var.set(self.repuesto_seleccionado.precio)
+            self.cantidad_var.set(self.repuesto_seleccionado.cantidad)
+        except Exception:
+            self.repuesto_seleccionado = None
 
     def limpiar_campos(self):
-        # Limpiar Repuesto
-        self.id.set("")
-        self.nombre.set("")
-        self.precio.set("")
-        self.cantidad.set("")
+        self.id_var.set("")
+        self.nombre_var.set("")
+        self.precio_var.set("")
+        self.cantidad_var.set("")
+
+from tkinter import *
+from tkinter import ttk, messagebox
 
 class VentanaVendedor:
     def __init__(self, root, vendedores):
-        # Se crea la ventana emergente de "Registro de Vendedor"
+        # Se crea la ventana emergente
         self.ventana = Toplevel(root)
-        self.ventana.title("Registro de Vendedor")
-        self.ventana.geometry("400x300")
+        self.ventana.title("Gestión de Vendedores")
+        self.ventana.geometry("600x400")
         
-        # Almacenar los vendedores
+        # Almacenar la lista de vendedores
         self.vendedores = vendedores
         
+        # Frame superior para los campos de entrada
+        frame_campos = ttk.Frame(self.ventana, padding="10")
+        frame_campos.pack(side=TOP, fill=X)
+        
         # Campos para registrar al vendedor
-        ttk.Label(self.ventana, text="Nombre:").grid(row=0, column=0)
-        self.nombre = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.nombre).grid(row=0, column=1)
+        ttk.Label(frame_campos, text="Nombre:").grid(row=0, column=0, padx=5, pady=5)
+        self.nombre_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.nombre_var).grid(row=0, column=1, padx=5, pady=5)
         
-        ttk.Label(self.ventana, text="ID:").grid(row=1, column=0)
-        self.id = StringVar()
-        ttk.Entry(self.ventana, textvariable=self.id).grid(row=1, column=1)
+        ttk.Label(frame_campos, text="ID:").grid(row=0, column=2, padx=5, pady=5)
+        self.id_var = StringVar()
+        ttk.Entry(frame_campos, textvariable=self.id_var).grid(row=0, column=3, padx=5, pady=5)
         
-        # Botón para registrar al vendedor
-        ttk.Button(
-            self.ventana, 
-            text="Registrar Vendedor", 
-            command=self.registrar_vendedor
-        ).grid(row=2, column=0, columnspan=2, pady=10)
-    
+        # Botones de acción
+        ttk.Button(frame_campos, text="Registrar", command=self.registrar_vendedor).grid(row=1, column=0, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Editar", command=self.editar_vendedor).grid(row=1, column=1, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Eliminar", command=self.eliminar_vendedor).grid(row=1, column=2, padx=5, pady=10)
+        ttk.Button(frame_campos, text="Limpiar", command=self.limpiar_campos).grid(row=1, column=3, padx=5, pady=10)
+        
+        # Tabla para visualizar los vendedores
+        self.tabla = ttk.Treeview(self.ventana, columns=("Nombre", "ID"), show="headings")
+        self.tabla.heading("Nombre", text="Nombre")
+        self.tabla.heading("ID", text="ID")
+        self.tabla.pack(fill=BOTH, expand=True)
+
+        # Evento para seleccionar un vendedor en la tabla
+        self.tabla.bind("<<TreeviewSelect>>", self.seleccionar_vendedor)
+
+        # Variable para almacenar el vendedor seleccionado
+        self.vendedor_seleccionado = None
+
+        # Cargar los vendedores en la tabla
+        self.actualizar_tabla()
+
     def registrar_vendedor(self):
-        # Obtener los valores de los campos
-        nombre = self.nombre.get().strip()
-        id_vendedor = self.id.get().strip()
-        
-        # Validar que los campos no estén vacíos
-        if not nombre or not id_vendedor:
-            messagebox.showerror("Error", "Debe completar todos los campos")
+        try:
+            nombre = self.nombre_var.get().strip()
+            id_vendedor = self.id_var.get().strip()
+
+            # Validar campos
+            if not nombre or not id_vendedor:
+                raise ValueError("Debe completar todos los campos")
+
+            # Verificar si el ID ya existe
+            if any(v['id'] == id_vendedor for v in self.vendedores):
+                raise ValueError("El ID de vendedor ya existe")
+
+            # Crear y agregar el nuevo vendedor
+            nuevo_vendedor = {'nombre': nombre, 'id': id_vendedor}
+            self.vendedores.append(nuevo_vendedor)
+
+            # Actualizar la tabla y limpiar los campos
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Vendedor registrado exitosamente")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+
+    def editar_vendedor(self):
+        if not self.vendedor_seleccionado:
+            messagebox.showwarning("Advertencia", "Seleccione un vendedor para editar")
             return
-        
-        # Verificar si el ID ya existe
+
+        try:
+            nombre = self.nombre_var.get().strip()
+            id_vendedor = self.id_var.get().strip()
+
+            # Validar campos
+            if not nombre or not id_vendedor:
+                raise ValueError("Debe completar todos los campos")
+
+            # Verificar que el ID no se duplique al editar
+            if any(v['id'] == id_vendedor and v != self.vendedor_seleccionado for v in self.vendedores):
+                raise ValueError("El ID de vendedor ya existe")
+
+            # Actualizar los datos del vendedor seleccionado
+            self.vendedor_seleccionado['nombre'] = nombre
+            self.vendedor_seleccionado['id'] = id_vendedor
+
+            # Actualizar la tabla y limpiar los campos
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Vendedor editado exitosamente")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+
+    def eliminar_vendedor(self):
+        if not self.vendedor_seleccionado:
+            messagebox.showwarning("Advertencia", "Seleccione un vendedor para eliminar")
+            return
+
+        # Confirmar eliminación
+        if messagebox.askyesno("Confirmar", "¿Está seguro de eliminar este vendedor?"):
+            self.vendedores.remove(self.vendedor_seleccionado)
+            self.actualizar_tabla()
+            self.limpiar_campos()
+            messagebox.showinfo("Éxito", "Vendedor eliminado exitosamente")
+
+    def actualizar_tabla(self):
+        # Limpiar la tabla
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+
+        # Agregar los vendedores a la tabla
         for vendedor in self.vendedores:
-            if vendedor['id'] == id_vendedor:
-                messagebox.showerror("Error", "El ID de vendedor ya existe")
-                return
-        
-        # Crear un nuevo vendedor y agregarlo a la lista de vendedores
-        nuevo_vendedor = {'nombre': nombre, 'id': id_vendedor}
-        self.vendedores.append(nuevo_vendedor)
-        
-        # Limpiar los campos
-        self.limpiar_campos()
-        
-        # Confirmación de registro
-        messagebox.showinfo("Éxito", "Vendedor registrado exitosamente")
-        
-        # Opcional: Cerrar la ventana después de registrar
-        self.ventana.destroy()
-    
+            self.tabla.insert("", END, values=(vendedor['nombre'], vendedor['id']))
+
+    def seleccionar_vendedor(self, event):
+        try:
+            item = self.tabla.selection()[0]
+            values = self.tabla.item(item, "values")
+            self.vendedor_seleccionado = next(v for v in self.vendedores if v['id'] == values[1])
+
+            # Llenar los campos con los valores seleccionados
+            self.nombre_var.set(self.vendedor_seleccionado['nombre'])
+            self.id_var.set(self.vendedor_seleccionado['id'])
+        except Exception:
+            self.vendedor_seleccionado = None
+
     def limpiar_campos(self):
-        # Limpiar los campos de la ventana
-        self.nombre.set("")
-        self.id.set("")
-
-
+        self.nombre_var.set("")
+        self.id_var.set("")
+        self.vendedor_seleccionado = None
 
 class AplicacionOrdenes:
     def __init__(self, root, clientes, repuestos):
