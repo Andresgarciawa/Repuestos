@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from gestion import GestionApp  # Importa la clase desde gestion.py
+from gestion import *  # Importa la clase desde gestion.py
 
 # Datos de login quemados en el código
 login_usuario = "usuario123"
@@ -17,7 +17,7 @@ def verificar_login():
         ventana.destroy()  # Cierra la ventana de login
         # Crea una nueva ventana para la aplicación de gestión
         root = Tk()
-        app = GestionApp(root)
+        app = MenuPrincipal(root)
         root.mainloop()  # Lanza la interfaz de gestión
     else:
         messagebox.showerror("Error", "Usuario o contraseña incorrectos")
